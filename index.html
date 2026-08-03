@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GRUPO LABMEDIC · BLESSING — Pedidos &amp; Insumos</title>
+<style>
+  :root{
+    --navy-950:#0b1f2a;
+    --navy-900:#0f2b3a;
+    --navy-800:#153a4d;
+    --teal-700:#0f6e6a;
+    --teal-600:#14867f;
+    --teal-500:#1aa39a;
+    --teal-100:#e3f4f2;
+    --amber-500:#e0973a;
+    --amber-100:#fbead2;
+    --coral-500:#d1584a;
+    --coral-100:#f9e1de;
+    --paper:#f6f4ee;
+    --card:#ffffff;
+    --ink-900:#152025;
+    --ink-600:#4c5c62;
+    --ink-400:#7c8b90;
+    --line:#e1e0d6;
+    --line-strong:#c9c7ba;
+    --radius:10px;
+    --font-display:'Fraunces', 'Iowan Old Style', 'Georgia', serif;
+    --font-body:'IBM Plex Sans', 'Segoe UI', Arial, sans-serif;
+    --font-mono:'IBM Plex Mono', 'Consolas', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--font-body);
+    background:
+      radial-gradient(1200px 400px at 10% -10%, rgba(26,163,154,.08), transparent),
+      var(--paper);
+    color:var(--ink-900);
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--teal-100);}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    background:linear-gradient(120deg, var(--navy-950), var(--navy-800) 70%);
+    color:#eef6f5;
+    padding:22px 28px 20px;
+    position:relative;
+    overflow:hidden;
+  }
+  .topbar::after{
+    content:"";
+    position:absolute; right:-60px; top:-80px;
+    width:280px; height:280px; border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, rgba(26,163,154,.35), transparent 70%);
+  }
+  .topbar-inner{position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:24px; flex-wrap:wrap;}
+  .brand-eyebrow{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--teal-500); margin:0 0 6px;
+  }
+  .brand-title{
+    font-family:var(--font-display); font-weight:600; font-size:30px; line-height:1.05; margin:0;
+    letter-spacing:-.01em;
+  }
+  .brand-title em{font-style:italic; color:var(--teal-500); font-weight:500;}
+  .brand-sub{margin:8px 0 0; font-size:13px; color:#b9cdd0; max-width:520px;}
+  .topbar-meta{display:flex; gap:10px; flex-wrap:wrap;}
+  .pill{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.03em;
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14);
+    color:#dcecea; padding:7px 12px; border-radius:100px; white-space:nowrap;
+  }
+  .pill b{color:#fff;}
+  .topbar-meta .btn{
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); color:#eef6f5;
+  }
+  .topbar-meta .btn:hover{background:rgba(255,255,255,.16); border-color:var(--teal-500);}
+
+  /* ---------- Layout ---------- */
+  .wrap{max-width:1360px; margin:0 auto; padding:22px 28px 60px;}
+
+  /* ---------- Cards ---------- */
+  .cards{
+    display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin:20px 0 22px;
+  }
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px 16px; position:relative; overflow:hidden;
+  }
+  .card::before{
+    content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--accent, var(--teal-500));
+  }
+  .card .k{font-family:var(--font-mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-400); margin:0 0 6px;}
+  .card .v{font-family:var(--font-display); font-size:22px; font-weight:600; margin:0; color:var(--navy-900); line-height:1.1;}
+  .card .v small{font-family:var(--font-body); font-size:12px; color:var(--ink-400); font-weight:400; margin-left:4px;}
+  .card.c-teal{--accent:var(--teal-500);}
+  .card.c-amber{--accent:var(--amber-500);}
+  .card.c-coral{--accent:var(--coral-500);}
+  .card.c-navy{--accent:var(--navy-800);}
+
+  /* ---------- Panel ---------- */
+  .panel{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    margin-bottom:16px;
+  }
+  .panel-head{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:14px 18px; border-bottom:1px solid var(--line); flex-wrap:wrap;
+  }
+  .panel-head h2{
+    font-family:var(--font-display); font-size:16px; margin:0; font-weight:600;
+    display:flex; align-items:center; gap:8px;
+  }
+  .panel-head h2 .num{
+    font-family:var(--font-mono); font-size:10px; background:var(--teal-100); color:var(--teal-700);
+    border-radius:100px; padding:2px 8px;
+  }
+  .panel-body{padding:16px 18px;}
+
+  /* ---------- Filters ---------- */
+  .filters-grid{
+    display:grid; grid-template-columns:repeat(6, 1fr); gap:10px; align-items:end;
+  }
+  .field{display:flex; flex-direction:column; gap:5px;}
+  .field label{font-family:var(--font-mono); font-size:10px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-400);}
+  select, input[type=text], input[type=date], input[type=number]{
+    font-family:var(--font-body); font-size:13px; color:var(--ink-900);
+    border:1px solid var(--line-strong); border-radius:7px; padding:8px 10px;
+    background:#fff; width:100%;
+  }
+  select:focus, input:focus{outline:2px solid var(--teal-500); outline-offset:1px; border-color:var(--teal-500);}
+  .btn{
+    font-family:var(--font-body); font-size:13px; font-weight:600; cursor:pointer;
+    border-radius:7px; border:1px solid transparent; padding:9px 16px;
+    display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
+    transition:transform .05s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-primary{background:var(--teal-600); color:#fff;}
+  .btn-primary:hover{background:var(--teal-700);}
+  .btn-ghost{background:#fff; border-color:var(--line-strong); color:var(--ink-600);}
+  .btn-ghost:hover{border-color:var(--teal-500); color:var(--teal-700);}
+  .btn-amber{background:var(--amber-500); color:#fff;}
+  .btn-amber:hover{background:#c67f2b;}
+  .btn-coral{background:var(--coral-500); color:#fff;}
+  .btn-coral:hover{background:#b8483b;}
+  .btn-sm{padding:5px 9px; font-size:12px; border-radius:6px;}
+  .btn[disabled]{opacity:.45; cursor:not-allowed;}
+  .toolbar{display:flex; gap:8px; flex-wrap:wrap;}
+  .action-row{
+    display:flex; gap:12px; margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);
+  }
+  .action-row .btn{flex:1; justify-content:center;}
+
+  /* ---------- Table collapse ---------- */
+  .table-scroll.collapsed, .footbar.collapsed{display:none;}
+
+  /* ---------- Table ---------- */
+  .table-scroll{overflow:auto; max-height:520px; border-top:1px solid var(--line);}
+  table{border-collapse:collapse; width:100%; font-size:12.5px;}
+  thead th{
+    position:sticky; top:0; background:var(--navy-900); color:#dfeceb; text-align:left;
+    padding:9px 10px; font-family:var(--font-mono); font-weight:500; font-size:10.5px;
+    letter-spacing:.04em; text-transform:uppercase; white-space:nowrap; z-index:2;
+    cursor:pointer; user-select:none;
+  }
+  thead th:hover{background:var(--navy-800);}
+  thead th.sorted::after{content:" ▾"; color:var(--teal-500);}
+  thead th.sorted-asc::after{content:" ▴"; color:var(--teal-500);}
+  tbody td{padding:8px 10px; border-bottom:1px solid var(--line); white-space:nowrap;}
+  tbody tr:hover{background:var(--teal-100);}
+  tbody tr:nth-child(even){background:#fbfaf6;}
+  tbody tr:nth-child(even):hover{background:var(--teal-100);}
+  .num-cell{font-family:var(--font-mono); text-align:right;}
+  .tag{
+    font-family:var(--font-mono); font-size:10px; padding:2px 7px; border-radius:100px;
+    background:var(--teal-100); color:var(--teal-700); white-space:nowrap;
+  }
+  .tag-new{background:var(--teal-100); color:var(--teal-700);}
+  .tag-edit{background:var(--amber-100); color:#8a5a1e;}
+  .row-actions{display:flex; gap:5px;}
+  .icon-btn{
+    border:1px solid var(--line-strong); background:#fff; border-radius:6px; width:26px; height:26px;
+    cursor:pointer; display:inline-flex; align-items:center; justify-content:center; color:var(--ink-600);
+  }
+  .icon-btn:hover{border-color:var(--teal-500); color:var(--teal-700);}
+  .icon-btn.danger:hover{border-color:var(--coral-500); color:var(--coral-500);}
+  .empty-state{padding:40px 20px; text-align:center; color:var(--ink-400);}
+  .empty-state b{color:var(--ink-600); display:block; margin-bottom:4px; font-family:var(--font-display); font-size:16px;}
+
+  .footbar{display:flex; justify-content:space-between; align-items:center; padding:10px 18px; border-top:1px solid var(--line); font-size:12px; color:var(--ink-400); flex-wrap:wrap; gap:8px;}
+  .footbar b{color:var(--ink-900);}
+
+  /* ---------- Modal (form CRUD) ---------- */
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(11,31,42,.55); display:none;
+    align-items:flex-start; justify-content:center; padding:40px 16px; overflow:auto; z-index:50;
+  }
+  .modal-backdrop.open{display:flex;}
+  .modal{
+    background:#fff; border-radius:12px; width:100%; max-width:760px; box-shadow:0 30px 60px rgba(0,0,0,.35);
+    animation:pop .16s ease;
+  }
+  @keyframes pop{from{transform:translateY(8px); opacity:0;} to{transform:translateY(0); opacity:1;}}
+  .modal-head{
+    padding:16px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;
+    background:linear-gradient(120deg, var(--navy-950), var(--navy-800));
+    color:#fff; border-radius:12px 12px 0 0;
+  }
+  .modal-head h3{margin:0; font-family:var(--font-display); font-size:17px; font-weight:600;}
+  .modal-head .close{background:none; border:none; color:#cfe4e2; font-size:20px; cursor:pointer; line-height:1;}
+  .modal-body{padding:20px; max-height:70vh; overflow:auto;}
+  .form-grid{display:grid; grid-template-columns:repeat(4, 1fr); gap:12px;}
+  .form-grid .span2{grid-column:span 2;}
+  .form-grid .span4{grid-column:span 4;}
+  .computed{
+    background:var(--teal-100); border:1px dashed var(--teal-500); border-radius:7px; padding:8px 10px;
+    font-family:var(--font-mono); font-size:13px; color:var(--teal-700); display:flex; justify-content:space-between;
+  }
+  .modal-foot{padding:14px 20px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:10px;}
+  .hint{font-size:11px; color:var(--ink-400);}
+  .catalog-hint{font-size:11px; color:var(--ink-400); margin-top:4px;}
+  .catalog-hint b{color:var(--teal-700);}
+
+  datalist{}
+
+  /* ---------- Print report modal ---------- */
+  #printArea{display:none;}
+
+  @media print{
+    body *{visibility:hidden;}
+    #printArea, #printArea *{visibility:visible;}
+    #printArea{display:block; position:absolute; left:0; top:0; width:100%; padding:0;}
+    .no-print{display:none !important;}
+  }
+  .pr-header{display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid var(--navy-900); padding-bottom:10px; margin-bottom:16px;}
+  .pr-title{font-family:var(--font-display); font-size:22px; font-weight:700; margin:0;}
+  .pr-sub{font-size:12px; color:var(--ink-600); margin:4px 0 0;}
+  .pr-meta{text-align:right; font-size:11px; color:var(--ink-400); font-family:var(--font-mono);}
+  .pr-cards{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:18px;}
+  .pr-card{border:1px solid #ccc; border-radius:6px; padding:8px 10px;}
+  .pr-card .k{font-size:9px; text-transform:uppercase; letter-spacing:.06em; color:#666; font-family:var(--font-mono);}
+  .pr-card .v{font-family:var(--font-display); font-size:17px; font-weight:700; margin-top:2px;}
+  .pr-table{width:100%; border-collapse:collapse; font-size:10.5px;}
+  .pr-table th{background:var(--navy-900); color:#fff; text-align:left; padding:6px 7px; font-family:var(--font-mono); font-size:9px; text-transform:uppercase;}
+  .pr-table td{padding:5px 7px; border-bottom:1px solid #ddd;}
+  .pr-table tr:nth-child(even) td{background:#f6f4ee;}
+  .pr-foot{margin-top:10px; font-size:10px; color:#888; text-align:right;}
+  .pr-group-title{font-family:var(--font-display); font-weight:700; font-size:13px; margin:18px 0 6px; padding-top:8px; border-top:1px solid #ddd;}
+
+  /* ---------- Report selector & report panel ---------- */
+  .report-select{
+    font-family:var(--font-body); font-size:13px; font-weight:600; color:var(--ink-600);
+    border:1px solid var(--line-strong); border-radius:7px; padding:8px 30px 8px 12px; background:#fff;
+    cursor:pointer;
+  }
+  .report-select:focus{outline:2px solid var(--teal-500); outline-offset:1px; border-color:var(--teal-500);}
+  .report-panel .panel-head h2{color:var(--teal-700);}
+  .chart-row{display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:0 18px 18px;}
+  .chart-box{border:1px solid var(--line); border-radius:8px; padding:12px 14px; background:#fff;}
+  .chart-box h4{margin:0 0 10px; font-family:var(--font-display); font-size:13px; color:var(--ink-600); font-weight:600;}
+  .bar-row{display:flex; align-items:center; gap:8px; margin-bottom:7px; font-size:11.5px;}
+  .bar-label{width:150px; flex-shrink:0; color:var(--ink-600); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .bar-track{flex:1; background:var(--paper); border-radius:4px; overflow:hidden; height:14px; border:1px solid var(--line);}
+  .bar-fill{height:100%; background:linear-gradient(90deg, var(--teal-600), var(--teal-500));}
+  .bar-value{width:100px; text-align:right; font-family:var(--font-mono); color:var(--ink-900); font-weight:600; flex-shrink:0;}
+  .rp-empty{padding:30px 18px; color:var(--ink-400); font-size:13px; text-align:center;}
+  .group-block{margin:0 18px 16px;}
+  .group-title{
+    font-family:var(--font-display); font-weight:700; font-size:13.5px; color:var(--navy-900);
+    margin:16px 0 6px; padding:8px 0 6px; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; align-items:baseline;
+  }
+  .group-title span:last-child{font-family:var(--font-mono); font-size:12px; color:var(--teal-700);}
+  .rp-table-wrap{overflow:auto; padding:0 18px 18px;}
+  .rp-table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  .rp-table th{
+    background:var(--navy-900); color:#dfeceb; text-align:left; padding:8px 10px;
+    font-family:var(--font-mono); font-weight:500; font-size:10px; letter-spacing:.04em; text-transform:uppercase; white-space:nowrap;
+  }
+  .rp-table td{padding:7px 10px; border-bottom:1px solid var(--line); white-space:nowrap;}
+  .rp-table tr:nth-child(even) td{background:#fbfaf6;}
+  .rp-table .num-cell{font-family:var(--font-mono); text-align:right;}
+  .rp-table th.num-th{text-align:right;}
+  .rp-subtotal td{font-weight:700; background:var(--teal-100) !important; border-top:1px solid var(--teal-500);}
+  /* Relatório Analítico: larguras proporcionais fixas para as 8 colunas, com
+     quebra de texto (em vez de nowrap), para que nenhuma coluna — em especial
+     "Total de Tabela" — fique cortada na tela ou na impressão. */
+  .rp-table-analitico{table-layout:fixed;}
+  .rp-table-analitico th, .rp-table-analitico td{white-space:normal; word-break:break-word;}
+  .rp-table-analitico th:nth-child(1), .rp-table-analitico td:nth-child(1){width:12%;}
+  .rp-table-analitico th:nth-child(2), .rp-table-analitico td:nth-child(2){width:9%;}
+  .rp-table-analitico th:nth-child(3), .rp-table-analitico td:nth-child(3){width:23%;}
+  .rp-table-analitico th:nth-child(4), .rp-table-analitico td:nth-child(4){width:7%;}
+  .rp-table-analitico th:nth-child(5), .rp-table-analitico td:nth-child(5){width:9%;}
+  .rp-table-analitico th:nth-child(6), .rp-table-analitico td:nth-child(6){width:15%;}
+  .rp-table-analitico th:nth-child(7), .rp-table-analitico td:nth-child(7){width:15%;}
+  .rp-table-analitico th:nth-child(8), .rp-table-analitico td:nth-child(8){width:10%;}
+  @media print{
+    .chart-row{grid-template-columns:1fr 1fr; padding:0 0 12px;}
+    .rp-table-wrap, .group-block{padding-left:0; padding-right:0;}
+    .rp-table th, .rp-table td{white-space:normal; word-break:break-word;}
+  }
+
+  @media (max-width:1100px){
+    .cards{grid-template-columns:repeat(3,1fr);}
+    .filters-grid{grid-template-columns:repeat(3,1fr);}
+    .form-grid{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:640px){
+    .cards{grid-template-columns:repeat(2,1fr);}
+    .filters-grid{grid-template-columns:repeat(2,1fr);}
+    .form-grid{grid-template-columns:1fr;}
+    .form-grid .span2, .form-grid .span4{grid-column:span 1;}
+    .pr-cards{grid-template-columns:repeat(2,1fr);}
+    .action-row{flex-direction:column;}
+  }
+
+  .toast{
+    position:fixed; bottom:20px; right:20px; background:var(--navy-950); color:#fff; padding:11px 18px;
+    border-radius:8px; font-size:13px; box-shadow:0 10px 24px rgba(0,0,0,.25); opacity:0; pointer-events:none;
+    transform:translateY(8px); transition:all .2s ease; z-index:100; display:flex; align-items:center; gap:8px;
+  }
+  .toast.show{opacity:1; transform:translateY(0);}
+  .toast.err{background:var(--coral-500);}
+  .badge-count{font-family:var(--font-mono); font-size:10px; background:rgba(255,255,255,.15); padding:1px 7px; border-radius:100px;}
+</style>
+<!-- Preenchido dinamicamente pelo JS (buildPrintReport) para colocar todos os
+     relatórios em paisagem na impressão, permitindo melhor distribuição das
+     colunas e informações. -->
+<style id="printOrientationStyle"></style>
+</head>
+<body>
+
+<div class="topbar no-print">
+  <div class="topbar-inner">
+    <div>
+      <p class="brand-eyebrow">Grupo Labmedic &middot; Contrato Blessing</p>
+      <h1 class="brand-title">Gestão de <em>Pedidos</em> &amp; Insumos</h1>
+      <p class="brand-sub">Cadastro completo de pedidos por unidade — controle de venda, tabela, testes e diferença, com filtros e relatório de impressão.</p>
+    </div>
+    <div class="topbar-meta">
+      <span class="pill">Registros <b id="pillTotal">0</b></span>
+      <span class="pill">Unidades <b id="pillUnidades">0</b></span>
+      <span class="pill">Mês predominante <b id="pillMesPredominante">—</b></span>
+      <span class="pill">Última atualização <b id="pillUpdated">—</b></span>
+      <button class="btn btn-ghost btn-sm" id="btnImport">⇪ Importar Excel</button>
+      <input type="file" id="fileImport" accept=".xlsx,.xls,.xlsm,.csv" style="display:none">
+      <button class="btn btn-ghost btn-sm" id="btnExport" title="Exporta os registros filtrados com coluna STATUS (IMPORTADO/NOVO/EDITADO) e inclui os excluídos para auditoria. Os dados ficam salvos apenas neste navegador.">⇩ Exportar Excel</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- CARDS RESUMO -->
+  <div class="cards" id="cardsRow"></div>
+
+  <!-- CARDS RESUMO LOCAÇÕES (aba "Resumo Locações" da planilha) -->
+  <div class="cards" id="cardsRowLocacoes"></div>
+
+  <!-- FILTROS -->
+  <div class="panel no-print">
+    <div class="panel-head">
+      <h2>Filtros <span class="num" id="filterCount">0 registros no filtro</span></h2>
+      <div class="toolbar">
+        <select class="report-select" id="reportSelect" title="Escolha o relatório para visualizar e imprimir">
+          <option value="" selected>Selecione um relatório...</option>
+          <option value="analitico">📊 Relatório Analítico</option>
+          <option value="faturamento_linha">📈 Faturamento por Linha</option>
+          <option value="locacoes">🏷️ Locações Fixas e Variáveis</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" id="btnClearFilters">Limpar filtros</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="filters-grid">
+        <div class="field">
+          <label>Unidade</label>
+          <select id="fUnidade"><option value="">Todas</option></select>
+        </div>
+        <div class="field">
+          <label>Linha</label>
+          <select id="fLinha"><option value="">Todas</option></select>
+        </div>
+        <div class="field span2">
+          <label>Produto (busca)</label>
+          <input type="text" id="fProduto" placeholder="Digite parte do nome do produto...">
+        </div>
+        <div class="field">
+          <label>Data início</label>
+          <input type="date" id="fDataIni">
+        </div>
+        <div class="field">
+          <label>Data fim</label>
+          <input type="date" id="fDataFim">
+        </div>
+        <div class="field">
+          <label>Nº Pedido</label>
+          <input type="number" id="fPedido" placeholder="Ex: 42">
+        </div>
+        <div class="field">
+          <label>NF</label>
+          <input type="text" id="fNF" placeholder="Ex: 18527">
+        </div>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-primary" id="btnNew">+ Novo pedido</button>
+        <button class="btn btn-coral" id="btnClearAll">🗑 Limpar tudo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RELATÓRIO SELECIONADO -->
+  <div class="panel report-panel" id="reportPanel">
+    <div class="panel-head no-print">
+      <h2 id="reportPanelTitle">Relatório Analítico</h2>
+      <div class="toolbar">
+        <button class="btn btn-amber btn-sm" id="btnPrintReportTop">🖨 Imprimir este relatório</button>
+      </div>
+    </div>
+    <div class="cards" id="reportCards" style="margin:16px 18px 4px;"></div>
+    <div id="reportCharts"></div>
+    <div id="reportBody"></div>
+  </div>
+
+  <!-- TABELA / CRUD -->
+  <div class="panel">
+    <div class="panel-head no-print">
+      <h2>Registros <span class="num" id="tableCount">0</span></h2>
+      <div class="toolbar">
+        <button class="btn btn-ghost btn-sm" id="btnToggleTable">▾ Expandir registros</button>
+      </div>
+    </div>
+    <div class="table-scroll collapsed" id="tableScroll">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th data-k="pedido">Pedido</th>
+            <th data-k="nf">NF</th>
+            <th class="no-print">Ações</th>
+            <th data-k="unidade">Unidade</th>
+            <th data-k="linha">Linha</th>
+            <th data-k="produto">Produto</th>
+            <th data-k="qtde">Qtde</th>
+            <th data-k="data">Data</th>
+            <th data-k="vtabela">V.Tabela</th>
+            <th data-k="vvenda">V.Venda</th>
+            <th data-k="vsubtot">Subtotal</th>
+            <th data-k="diftabela">Dif.Tabela</th>
+            <th data-k="totaltabela">Total Tabela</th>
+            <th data-k="testes">Testes</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="footbar no-print collapsed" id="tableFootbar">
+      <span>Exibindo <b id="showingCount">0</b> de <b id="totalCount">0</b> registros</span>
+      <span>Dados salvos automaticamente no navegador</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL CRUD -->
+<div class="modal-backdrop no-print" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Novo pedido</h3>
+      <button class="close" id="btnCloseModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field span2">
+          <label>Unidade</label>
+          <select id="mUnidade"></select>
+        </div>
+        <div class="field span2">
+          <label>Linha</label>
+          <select id="mLinha"></select>
+        </div>
+        <div class="field span2">
+          <label>Produto</label>
+          <input list="dlProdutos" id="mProduto" placeholder="Selecione a linha primeiro...">
+          <datalist id="dlProdutos"></datalist>
+          <div class="catalog-hint" id="catalogHint"></div>
+        </div>
+        <div class="field">
+          <label>Qtde</label>
+          <input type="number" id="mQtde" min="0" step="1" value="1">
+        </div>
+        <div class="field">
+          <label>Data do pedido</label>
+          <input type="date" id="mData">
+        </div>
+        <div class="field">
+          <label>V.Tabela (unit.)</label>
+          <input type="number" id="mVTabela" step="0.01">
+        </div>
+        <div class="field">
+          <label>V.Venda (unit.)</label>
+          <input type="number" id="mVVenda" step="0.01">
+        </div>
+        <div class="field">
+          <label>Testes (unit.)</label>
+          <input type="number" id="mTestes" step="1">
+        </div>
+        <div class="field">
+          <label>Nº Pedido</label>
+          <input type="number" id="mPedido">
+        </div>
+        <div class="field">
+          <label>NF</label>
+          <input type="text" id="mNF">
+        </div>
+        <div class="field span4">
+          <div class="computed">
+            <span>Subtotal Venda: <b id="calcSubtotal">R$ 0,00</b></span>
+            <span>Dif. Tabela: <b id="calcDif">R$ 0,00</b></span>
+            <span>Total Tabela: <b id="calcTotal">R$ 0,00</b></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <span class="hint">Preços e testes são preenchidos automaticamente pelo catálogo, mas podem ser ajustados manualmente.</span>
+      <div class="toolbar">
+        <button class="btn btn-ghost btn-sm" id="btnCancelModal">Cancelar</button>
+        <button class="btn btn-primary" id="btnSaveModal">Salvar pedido</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ÁREA DE IMPRESSÃO -->
+<div id="printArea"></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* ============================ DADOS BASE (extraídos da planilha original) ============================ */
+const CATALOG = {"BIOQUÍMICA": {"AUTOCAL H 1X5ML": {"vt": 0, "vc": 0, "vv": 81.11, "testes": 0}, "BIOTEC_BILIRRUBINA DIRETA 104 ML": {"vt": 116.52, "vc": 62.52, "vv": 75.02, "testes": 0}, "BIOTEC_BILIRRUBINA TOTAL 104 ML": {"vt": 116.52, "vc": 62.52, "vv": 75.02, "testes": 0}, "BIOTEC_LIQUIDO DE SISTEMA 1X250": {"vt": 118.8, "vc": 62.54, "vv": 75.05, "testes": 0.0}, "BIOTEC_QUANTIALT 1 X 5ML": {"vt": 107.89, "vc": 69.75, "vv": 83.7, "testes": 0}, "BIOTEC_QUANTINORM 1 X 5ML": {"vt": 107.89, "vc": 64.88, "vv": 77.86, "testes": 0}, "LABTEST_QUALITROL CK": {"vt": 271.0, "vc": 167.65, "vv": 171.0, "testes": 0}, "PCR TURBIDIMETRICO 50 ML": {"vt": 286.0, "vc": 115.0, "vv": 138.0, "testes": 0}, "SOLUÇÃO DESPROTEINOZANTE 1L": {"vt": 86.4, "vc": 35.0, "vv": 42.0, "testes": 0.0}, "SOLUÇÃO DESPROTEINOZANTE 2L": {"vt": 172.8, "vc": 70.0, "vv": 84.0, "testes": 0.0}, "VIDA_ACID WASH SOLUTION ": {"vt": 532.98, "vc": 329.0, "vv": 394.8, "testes": 0.0}, "VIDA_ACIDO URICO 200 ML": {"vt": 77.76, "vc": 37.0, "vv": 44.4, "testes": 800.0}, "VIDA_ALBUMINA 200 ML": {"vt": 62.64, "vc": 21.0, "vv": 25.2, "testes": 800.0}, "VIDA_ALKALINE WASH SOLUTION": {"vt": 532.98, "vc": 329.0, "vv": 394.8, "testes": 0.0}, "VIDA_AMILASE 60 ML": {"vt": 280.8, "vc": 115.0, "vv": 138.0, "testes": 240.0}, "VIDA_BILIRRUBINA DIRETA 105ML": {"vt": 118.8, "vc": 37.0, "vv": 44.4, "testes": 420.0}, "VIDA_BILIRRUBINA TOTAL 105ML": {"vt": 118.8, "vc": 42.0, "vv": 50.4, "testes": 420.0}, "VIDA_CALCIO 100ML": {"vt": 68.04, "vc": 35.0, "vv": 42.0, "testes": 400.0}, "VIDA_CK TOTAL 100 ML": {"vt": 307.8, "vc": 110.0, "vv": 132.0, "testes": 400.0}, "VIDA_CKMB 100ML": {"vt": 626.4, "vc": 260.0, "vv": 312.0, "testes": 400.0}, "VIDA_CLORETO 200ML": {"vt": 268.92, "vc": 48.0, "vv": 57.6, "testes": 800.0}, "VIDA_COLESTEROL TOTAL 200ML": {"vt": 84.24, "vc": 33.0, "vv": 39.6, "testes": 800.0}, "VIDA_CONTROLE N1/N2 ASO/FR/PCR": {"vt": 213.84, "vc": 129.0, "vv": 154.8, "testes": 0.0}, "VIDA_CREATININA 250ML": {"vt": 52.92, "vc": 29.0, "vv": 34.8, "testes": 1000.0}, "VIDA_DEFOAMER - 1000/003- 5000": {"vt": 1706.4, "vc": 790.0, "vv": 948.0, "testes": 0.0}, "VIDA_FERRITINA": {"vt": 453.6, "vc": 259.0, "vv": 310.8, "testes": 0.0}, "VIDA_FERRO 50ML": {"vt": 91.8, "vc": 42.0, "vv": 50.4, "testes": 200.0}, "VIDA_FOSFATASE ALCALINA 100ML": {"vt": 85.32, "vc": 39.0, "vv": 46.8, "testes": 400.0}, "VIDA_FOSFORO 200ML": {"vt": 129.6, "vc": 35.0, "vv": 42.0, "testes": 800.0}, "VIDA_GAMA GT 100ML": {"vt": 106.92, "vc": 44.0, "vv": 52.8, "testes": 400.0}, "VIDA_GLICOSE 1000ML": {"vt": 110.16, "vc": 54.0, "vv": 64.8, "testes": 4000.0}, "VIDA_HDL DIRETO 240ML": {"vt": 1242.0, "vc": 339.0, "vv": 406.8, "testes": 960.0}, "VIDA_LACTATO 100ML": {"vt": 334.8, "vc": 179.0, "vv": 214.8, "testes": 400.0}, "VIDA_LDH 100ML": {"vt": 102.6, "vc": 39.0, "vv": 46.8, "testes": 400.0}, "VIDA_LIPASE DIRETA 50 ML": {"vt": 490.0, "vc": 195.2, "vv": 234.24, "testes": 200.0}, "VIDA_MAGNESIO 100ML": {"vt": 74.52, "vc": 23.0, "vv": 27.6, "testes": 400.0}, "VIDA_PCR 100ML": {"vt": 572.4, "vc": 230.0, "vv": 276.0, "testes": 400.0}, "VIDA_PROTEINA TOTAL 250ML": {"vt": 52.92, "vc": 26.0, "vv": 31.2, "testes": 1000.0}, "VIDA_PROTEINA URINARIA + CONTROLE 100ML": {"vt": 76.68, "vc": 33.0, "vv": 39.6, "testes": 400.0}, "VIDA_TGO/AST 100ML": {"vt": 75.6, "vc": 37.0, "vv": 44.4, "testes": 400.0}, "VIDA_TGP/ALT 100ML": {"vt": 75.6, "vc": 37.0, "vv": 44.4, "testes": 400.0}, "VIDA_TRIGLICERIDES 500ML": {"vt": 399.6, "vc": 189.0, "vv": 226.8, "testes": 2000.0}, "VIDA_UREIA UV 200ML": {"vt": 105.84, "vc": 56.0, "vv": 67.2, "testes": 800.0}, "VIDA_VIDA CON N": {"vt": 84.24, "vc": 34.9, "vv": 41.88, "testes": 0.0}, "VIDA_VIDA CON P": {"vt": 84.24, "vc": 34.9, "vv": 41.88, "testes": 0.0}, "VIDA_VIDACAL NIVEL 1": {"vt": 126.36, "vc": 65.0, "vv": 78.0, "testes": 0.0}, "VYTTRA_ACIDO URICO (BM SERIES I) 200 M": {"vt": 72.0, "vc": 50.0, "vv": 60.0, "testes": 800.0}, "VYTTRA_ALBUMINA (BM SERIES I) 200 M": {"vt": 58.0, "vc": 21.0, "vv": 25.2, "testes": 800.0}, "VYTTRA_ALT / TGP (BM SERIES I) 100 ML ": {"vt": 70.0, "vc": 37.0, "vv": 44.4, "testes": 400.0}, "VYTTRA_AMILASE (BM SERIES I) 80 ML": {"vt": 335.0, "vc": 173.33, "vv": 208.0, "testes": 320.0}, "VYTTRA_AST / TGO (BM SERIES I) 100 ML": {"vt": 70.0, "vc": 37.0, "vv": 44.4, "testes": 400.0}, "VYTTRA_BILIRRUBINA DIRETA (BM SERIES I) 100 ML": {"vt": 104.76, "vc": 50.0, "vv": 60.0, "testes": 400.0}, "VYTTRA_BILIRRUBINA TOTAL (BM SERIES I) 100 ML": {"vt": 104.76, "vc": 50.0, "vv": 60.0, "testes": 400.0}, "VYTTRA_CALCIO (BM SERIES) 80 ML": {"vt": 50.5, "vc": 28.0, "vv": 33.6, "testes": 320.0}, "VYTTRA_CALCIO (UNIVERSAL) 100 ML": {"vt": 50.5, "vc": 35.0, "vv": 42.0, "testes": 400.0}, "VYTTRA_CKMB (BM SERIES I) 96 ML": {"vt": 556.8, "vc": 259.2, "vv": 311.04, "testes": 384.0}, "VYTTRA_CK-NAC 100ML": {"vt": 280.0, "vc": 120.0, "vv": 144.0, "testes": 400.0}, "VYTTRA_CLORETO 80ML": {"vt": 99.6, "vc": 80.0, "vv": 96.0, "testes": 320.0}, "VYTTRA_COLESTEROL TOTAL 500ML": {"vt": 170.0, "vc": 89.0, "vv": 106.8, "testes": 2000.0}, "VYTTRA_CREATININA (UNIVERSAL) 500 ML ": {"vt": 95.0, "vc": 66.0, "vv": 79.2, "testes": 2000.0}, "VYTTRA_FERRO 100ML": {"vt": 78.54, "vc": 37.12, "vv": 44.54, "testes": 400.0}, "VYTTRA_FOSFATASE ALCALINA (BM SERIES I) 100 ML": {"vt": 79.0, "vc": 37.0, "vv": 44.4, "testes": 400.0}, "VYTTRA_FOSFORO (BM SERIES I) 80 ML": {"vt": 79.2, "vc": 14.0, "vv": 16.8, "testes": 320.0}, "VYTTRA_GGT (BM SERIES I) 100 ML ": {"vt": 99.0, "vc": 37.0, "vv": 44.4, "testes": 400.0}, "VYTTRA_GLICOSE (UNIVERSAL) 500 ML": {"vt": 65.0, "vc": 27.0, "vv": 32.4, "testes": 2000.0}, "VYTTRA_HDL DIRETO 80ML": {"vt": 383.33, "vc": 104.0, "vv": 124.8, "testes": 320.0}, "VYTTRA_HEMAREF II - 1L": {"vt": 139.72, "vc": 69.86, "vv": 83.83, "testes": 0}, "VYTTRA_LDH (BM SERIES I) 100 ML": {"vt": 95.0, "vc": 39.0, "vv": 46.8, "testes": 400.0}, "VYTTRA_LIPASE (BM SERIES I) 50 ML": {"vt": 490.0, "vc": 195.2, "vv": 234.24, "testes": 200.0}, "VYTTRA_MAGNESIO (BM SERIES I) 80 ML": {"vt": 55.2, "vc": 18.4, "vv": 22.08, "testes": 320.0}, "VYTTRA_PCR (BM SERIES I) 96 ML": {"vt": 508.8, "vc": 220.8, "vv": 264.96, "testes": 384.0}, "VYTTRA_PROTEINA TOTAL (BM SERIES I) 200 ML ": {"vt": 42.0, "vc": 26.0, "vv": 31.2, "testes": 800.0}, "VYTTRA_PROTEINA URINARIA + CONTROLE 100ML ": {"vt": 61.38, "vc": 22.52, "vv": 27.02, "testes": 400.0}, "VYTTRA_SORO CONTR. ANORMAL DIACON 5ML": {"vt": 238.4, "vc": 149.9, "vv": 179.88, "testes": 0}, "VYTTRA_SORO CONTR. NORMAL DIACON 5ML": {"vt": 238.4, "vc": 149.9, "vv": 179.88, "testes": 0}, "VYTTRA_TRIGLICERIDES 500ML": {"vt": 370.0, "vc": 189.0, "vv": 226.8, "testes": 2000.0}, "VYTTRA_UREIA (UNIVERSAL) 500 ML": {"vt": 245.0, "vc": 95.0, "vv": 114.0, "testes": 2000.0}, "VYTTRA_VYTCAL CALIBRADOR PCR 1 ML": {"vt": 287.37, "vc": 177.37, "vv": 212.84, "testes": 0.0}, "VYTTRA_VYTCAL MULTICALIB. UNIVER. BIOQ. CLIN. - 3 ML": {"vt": 117.0, "vc": 45.0, "vv": 54.0, "testes": 0.0}, "VYTTRA_VYTCON BIOQUIMICA NIVEL I -5 ML": {"vt": 78.0, "vc": 45.6, "vv": 54.72, "testes": 0.0}, "VYTTRA_VYTCON BIOQUIMICA NIVEL II - 5 ML": {"vt": 78.0, "vc": 45.6, "vv": 54.72, "testes": 0.0}}, "HEMATOLOGIA": {"BOBINA TÉRMICA": {"vt": 0.0, "vc": 0.0, "vv": 0.0, "testes": 0}, "DIAGNO_D-CHECK  5 Diff": {"vt": 0, "vc": 0, "vv": 711.53, "testes": 0}, "DIAGNO_D-CHECK D 3X 2,5ML": {"vt": 559.0, "vc": 287.6, "vv": 345.12, "testes": 0.0}, "DIAGNO_DIACLEANER 1L": {"vt": 233.0, "vc": 34.05, "vv": 40.86, "testes": 0}, "DIAGNO_DIALYSE-3CF 1L": {"vt": 374.0, "vc": 85.95, "vv": 103.14, "testes": 0.0}, "DIAGNO_DIASTROM-3DH 0,5L": {"vt": 321.0, "vc": 66.6, "vv": 79.92, "testes": 0.0}, "DIAGNO_DIATERG 5L": {"vt": 233.0, "vc": 31.14, "vv": 37.37, "testes": 0.0}, "DIAGNO_DIATON-3 20L": {"vt": 420.0, "vc": 51.17, "vv": 61.4, "testes": 500.0}, "DIAGNO_DIATON-CP 20": {"vt": 288.0, "vc": 80.85, "vv": 97.02, "testes": 500.0}, "JH_DIACLEANZ CONCENTRADO": {"vt": 426.0, "vc": 84.0, "vv": 100.8, "testes": 0.0}, "JH_DIAG 51R 20L": {"vt": 224.0, "vc": 77.0, "vv": 92.4, "testes": 0}, "JH_DIALYSE 3CF 31102 500ML": {"vt": 239.0, "vc": 93.0, "vv": 111.6, "testes": 0.0}, "JH_LISE DIAG DIFF 51R 500ML": {"vt": 537.0, "vc": 280.5, "vv": 336.6, "testes": 0}, "JH_LISE DIAG H 51R 500ML": {"vt": 537.0, "vc": 258.8, "vv": 310.56, "testes": 0}, "JH_MHLAB CLEAN 20L": {"vt": 164.0, "vc": 192.5, "vv": 231.0, "testes": 0}, "JH_MHLAB DILU 20L": {"vt": 321.0, "vc": 125.0, "vv": 150.0, "testes": 800.0}, "JH_MHLAB SHEATH 20L LT": {"vt": 631.0, "vc": 324.0, "vv": 388.8, "testes": 0.0}, "VALOR DOS CONTADORES": {"vt": 1.4, "vc": 0, "vv": 0.0, "testes": 0}, "VIDA_CONTROLE VIDACON H6": {"vt": 1023.0, "vc": 779.0, "vv": 934.8, "testes": 0}, "VYTTRA_AUTO DESPRO 500ML": {"vt": 185.0, "vc": 21.31, "vv": 25.57, "testes": 0.0}, "VYTTRA_HEMOCLEAN HEMACOUNTER 1L": {"vt": 170.0, "vc": 45.7, "vv": 54.84, "testes": 0.0}, "VYTTRA_HEMOLISE DIFF HEMACOUNTER": {"vt": 537.0, "vc": 240.32, "vv": 288.38, "testes": 0.0}, "VYTTRA_HEMOLISE H PLUS": {"vt": 537.0, "vc": 240.32, "vv": 288.38, "testes": 0.0}, "VYTTRA_HEMOTON HEMACOUNTER - 20L": {"vt": 224.0, "vc": 65.22, "vv": 78.26, "testes": 500.0}, "VYTTRA_VYTCON H - 3 X 3ML": {"vt": 1023.0, "vc": 445.0, "vv": 534.0, "testes": 0.0}, "VYTTRA_VYTCON H - 6 X 3ML": {"vt": 1023.0, "vc": 852.15, "vv": 1022.58, "testes": 0.0}, "VIDA_HIPER CLEAN 100 ML": {"vt": 185.0, "vc": 40.0, "vv": 48.0, "testes": 0}, "VIDA_VIDATON VC - 20L": {"vt": 224.0, "vc": 65.22, "vv": 78.26, "testes": 0}, "VIDA_VIDACLEAN VC 1L": {"vt": 170.0, "vc": 45.7, "vv": 54.84, "testes": 0}, "VIDA_VIDALISE H VC": {"vt": 537.0, "vc": 240.32, "vv": 288.38, "testes": 0}, "VIDA_VIDALISE D VC": {"vt": 537.0, "vc": 240.32, "vv": 288.38, "testes": 0}}, "COAGULAÇÃO": {"BIOCONTROL N  3 X 1 ML": {"vt": 289.5, "vc": 105.05, "vv": 126.06, "testes": 0}, "BIOCONTROL P  3 X 1 ML": {"vt": 289.5, "vc": 105.05, "vv": 126.06, "testes": 0}, "BIOTEC_PLASMAS CONTROLE DE COAGULACAO 2 X 1ML": {"vt": 193.0, "vc": 94.9, "vv": 113.88, "testes": 0.0}, "BIOTEC_PROTROMBINA (TP) 10 X 6 ML": {"vt": 402.0, "vc": 244.04, "vv": 292.85, "testes": 600.0}, "BIOTEC_TROMBOPLASTINA PARC. ATIVADA (TTPA) 1 X 36ML": {"vt": 193.0, "vc": 99.54, "vv": 119.45, "testes": 320.0}, "BOBINA ": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "CLOT_PROTROMBINA (TP) 10 X 5 ML": {"vt": 193.0, "vc": 94.9, "vv": 113.88, "testes": 500.0}, "CLOT_TROMBOPLASTINA PARC. ATIVADA (TTPA) 1 X 30ML": {"vt": 193.0, "vc": 94.9, "vv": 113.88, "testes": 300.0}, "CUBETA DE AMOSTRA EQUIP. 2800/3800/PCT500": {"vt": 360.0, "vc": 360.0, "vv": 360.0, "testes": 0}, "CUBETA MAX COAG (1000)": {"vt": 1079.0, "vc": 660.0, "vv": 792.0, "testes": 0}, "CUBETA SISMEX / VCA (2000 UNID)": {"vt": 0.0, "vc": 0.0, "vv": 0.0, "testes": 0}, "TP BIOCLIN 10 X 2 ML": {"vt": 134.0, "vc": 68.44, "vv": 82.13, "testes": 0}, "TP BIOCLIN 10 X 5 ML": {"vt": 335.0, "vc": 171.1, "vv": 205.32, "testes": 0}, "TTPA BIOCLIN 6 X 2,5 ML": {"vt": 181.0, "vc": 68.44, "vv": 82.13, "testes": 0}, "VIDA_ PLASMAS CONTROLE DE COAGULACAO": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "VIDA_FIBRINOGÊNIO": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "VIDA_PROTROMBINA (TP) 10 X 5 ML": {"vt": 0.0, "vc": 180.0, "vv": 216.0, "testes": 0}, "VIDA_TROMBOPLASTINA PARC. ATIVADA (TTPA) 1 X 30ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0.0}}, "GASOMETRIA": {"PRIME_CALIBRADOR 300": {"vt": 3888.0, "vc": 803.4, "vv": 964.08, "testes": 360.0}, "PRIME_CALIBRADOR 400": {"vt": 3888.0, "vc": 824.0, "vv": 988.8, "testes": 470.0}, "PRIME_CALIBRADOR 500": {"vt": 4860.0, "vc": 844.6, "vv": 1013.52, "testes": 580.0}, "PRIME_CONTROLE AUTOMÁTICO": {"vt": 831.6, "vc": 618.0, "vv": 741.6, "testes": 0.0}, "PRIME_CONTROLE DE AMPOLA": {"vt": 0, "vc": 0, "vv": 0.0, "testes": 0.0}, "PRIME_CARTÃO SENSOR": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "PRIME_CATA COAGULOS": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "PRIME_PLUS CALIBRADOR 400": {"vt": 0, "vc": 0, "vv": 0.0, "testes": 0}, "PRIME_PLUS CARTÃO SENSOR": {"vt": 0, "vc": 0, "vv": 0.0, "testes": 0}, "PRIME_PLUS CONTROLE AUTOMÁTICO": {"vt": 0, "vc": 0, "vv": 0.0, "testes": 0}, "PRIME_PLUS CONTROLE DE AMPOLA": {"vt": 0, "vc": 0, "vv": 0.0, "testes": 0}, "MEDMAX_PACK MAXION": {"vt": 840.0, "vc": 0, "vv": 480.0, "testes": 0}, "KDV_PACK MAXION": {"vt": 840.0, "vc": 0, "vv": 480.0, "testes": 0}, "SOLUÇÃO COND. MAXION 30ML ": {"vt": 0.0, "vc": 0, "vv": 0, "testes": 0}, "SOLUÇÃO LIMPEZA MAXION 100ML": {"vt": 0.0, "vc": 0, "vv": 0, "testes": 0}, "VIDA_PACK DOUBLE PACK": {"vt": 1610.0, "vc": 0, "vv": 1275.0, "testes": 0}, "VIDA_PACK ELECTROLYTE V": {"vt": 1270.0, "vc": 0, "vv": 600.0, "testes": 0}, "VIDA_PACK GASMETER": {"vt": 1500.0, "vc": 0, "vv": 1090.0, "testes": 0}, "VYTTRA_PACK AVL - ISE GRAM": {"vt": 320.0, "vc": 0, "vv": 150.0, "testes": 0}, "SOLUÇÃO COND. VIDA 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "SOLUÇÃO LIMPEZA VIDA 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "SOLUÇÃO COND. AVL LS 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "SOLUÇÃO LIMPEZA AVL LS 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "BOBINA 5.7 x 20M": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "SOL. LIMPEZA VIDA 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "CONTROLE MISSION 3 NÍVEIS": {"vt": 630.0, "vc": 0, "vv": 630.0, "testes": 0}, "SERINGA LL P/GASOMETRIA C/HEPARINA": {"vt": 1300.0, "vc": 0, "vv": 0, "testes": 0}, "ABL5_CAL 1 - 140ML": {"vt": 0.0, "vc": 0, "vv": 100.0, "testes": 0}, "ABL5_CAL 2 - 140ML": {"vt": 0.0, "vc": 0, "vv": 100.0, "testes": 0}, "ABL5_RINSE - 340ML": {"vt": 0.0, "vc": 0, "vv": 100.0, "testes": 0}, "SERINGA DE LIMPEZA PRIME": {"vt": 282.0, "vc": 0, "vv": 282.0, "testes": 0}}, "HEMOGLOBINA": {"VIDA_KIT REAGENTE H9": {"vt": 1023.75, "vc": 699.0, "vv": 838.8, "testes": 0.0}, "VIDA_COLUNA CROMATOGRAFIA LIQ. H9": {"vt": 4384.0, "vc": 3390.0, "vv": 4068.0, "testes": 3200.0}, "VIDA_CONTROLE HBA1C H9": {"vt": 250.0, "vc": 149.0, "vv": 178.8, "testes": 0.0}, "VIDA_CALIBRADOR HBA1C H900": {"vt": 250.0, "vc": 169.0, "vv": 202.8, "testes": 0.0}, "BOBINA": {"vt": 2.28, "vc": 1.9, "vv": 2.28, "testes": 0}}, "TESTE_RÁPIDO": {"CELER_TROPONINA I": {"vt": 572.0, "vc": 275.0, "vv": 330.0, "testes": 0.0}, "CELER_D-DIMERO": {"vt": 1004.0, "vc": 390.0, "vv": 468.0, "testes": 0.0}, "CELER_ BNP": {"vt": 1069.0, "vc": 633.96, "vv": 760.75, "testes": 0.0}, "CELER_PROCALCITONINA (PCT)": {"vt": 1069.0, "vc": 639.25, "vv": 767.1, "testes": 0.0}}, "URINA": {"VIDA_TESTE URINA URIVIDA (KIT 6000 TESTES)": {"vt": 14256.0, "vc": 4594.0, "vv": 5512.8, "testes": 0}, "VIDA_TIRA DE URINA URS-12F": {"vt": 0.0, "vc": 54.9, "vv": 65.88, "testes": 0}, "VIDA_SOLUÇÃO DE LIMPEZA URS200": {"vt": 0.0, "vc": 65.0, "vv": 78.0, "testes": 0}, "VIDA_SOLUÇÃO DE LAVAGEM CONCENTRADA URS300": {"vt": 0.0, "vc": 160.0, "vv": 192.0, "testes": 0}, "VIDA_SOLUÇÃO DE LIMPEZA CONCENTRADA URS400": {"vt": 0.0, "vc": 850.0, "vv": 1020.0, "testes": 0}, "VIDA_CONTROLE URS-500 SEDIMENTO": {"vt": 0.0, "vc": 590.0, "vv": 708.0, "testes": 0}, "VIDA_CONTROLE URS-406 POSITIVO TIRAS": {"vt": 0.0, "vc": 320.0, "vv": 384.0, "testes": 0}}, "ÍONS-SELETIVOS": {"BOBINA": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "CONTROLE MISSION 3 NÍVEIS": {"vt": 630.0, "vc": 0, "vv": 630.0, "testes": 0}, "KDV_PACK MAXION": {"vt": 840.0, "vc": 0, "vv": 480.0, "testes": 0}, "MEDMAX_PACK MAXION": {"vt": 840.0, "vc": 0, "vv": 480.0, "testes": 0}, "SOLUÇÃO COND. MAXION 30ML ": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "SOLUÇÃO LIMPEZA MAXION 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "VIDA_PACK DOUBLE PACK": {"vt": 1610.0, "vc": 0, "vv": 1050.0, "testes": 0}, "VIDA_PACK ELECTROLYTE V": {"vt": 1270.0, "vc": 0, "vv": 600.0, "testes": 0}, "VIDA_PACK GASMETER": {"vt": 1500.0, "vc": 0, "vv": 1090.0, "testes": 0}, "VYTTRA_PACK AVL - ISE GRAM": {"vt": 320.0, "vc": 0, "vv": 150.0, "testes": 0}, "SOLUÇÃO COND. VIDA 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "SOLUÇÃO LIMPEZA VIDA 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "SOLUÇÃO COND. AVL LS 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "SOLUÇÃO LIMPEZA AVL LS 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "ELETRODO MEDIDOR DE REFERÊNCIA": {"vt": 1700.0, "vc": 0, "vv": 1700.0, "testes": 0}, "ELETRODO MEDIDOR DE CALCIO": {"vt": 1700.0, "vc": 0, "vv": 1700.0, "testes": 0}, "ELETRODO MEDIDOR DE CLORO": {"vt": 1700.0, "vc": 0, "vv": 1700.0, "testes": 0}, "ELETRODO MEDIDOR DE POTASSIO (K)": {"vt": 1700.0, "vc": 0, "vv": 1700.0, "testes": 0}, "ELETRODO MEDIDOR DE SÓDIO (NA)": {"vt": 1700.0, "vc": 0, "vv": 1700.0, "testes": 0}}, "BIOQUÍMICA-DC2": {"VIDA_ACIDO URICO 240 ML - DC2": {"vt": 88.0, "vc": 42.0, "vv": 50.4, "testes": 0}, "VIDA_ALBUMINA 240 ML - DC2": {"vt": 71.9, "vc": 25.0, "vv": 30.0, "testes": 0}, "VIDA_AMILASE 60 ML - DC2": {"vt": 253.0, "vc": 130.0, "vv": 156.0, "testes": 0}, "VIDA_BILIRRUBINA DIRETA 208ML DC2": {"vt": 220.0, "vc": 85.0, "vv": 102.0, "testes": 0}, "VIDA_BILIRRUBINA TOTAL 208 ML - DC2": {"vt": 220.0, "vc": 85.0, "vv": 102.0, "testes": 0}, "VIDA_CALCIO 120ML - DC2": {"vt": 79.15, "vc": 42.0, "vv": 50.4, "testes": 0}, "VIDA_CK TOTAL 75 ML - DC2": {"vt": 115.0, "vc": 115.0, "vv": 138.0, "testes": 0}, "VIDA_CKMB 75 ML - DC2": {"vt": 436.4, "vc": 220.0, "vv": 264.0, "testes": 0}, "VIDA_COLESTEROL TOTAL 240ML - DC2": {"vt": 91.1, "vc": 40.0, "vv": 48.0, "testes": 0}, "VIDA_CREATININA MONO 240ML - DC2": {"vt": 52.7, "vc": 32.0, "vv": 38.4, "testes": 0}, "VIDA_FERRO CROMAZUROL 120ML - DC2": {"vt": 137.8, "vc": 106.0, "vv": 127.2, "testes": 0}, "VIDA_FOSFATASE ALCALINA 75ML - DC2": {"vt": 67.0, "vc": 38.0, "vv": 45.6, "testes": 0}, "VIDA_FOSFORO UV 120 ML - DC2": {"vt": 81.5, "vc": 26.0, "vv": 31.2, "testes": 0}, "VIDA_GAMA GT 75 ML DC2": {"vt": 50.9, "vc": 25.0, "vv": 30.0, "testes": 0}, "VIDA_GLICOSE ENZIMATICA 300ML -DC2": {"vt": 47.9, "vc": 31.0, "vv": 37.2, "testes": 0}, "VIDA_HDL DIRETO 160 ML - DC2": {"vt": 771.0, "vc": 220.0, "vv": 264.0, "testes": 0}, "VIDA_LACTATO ENZIMATICO 120ML - DC2": {"vt": 448.7, "vc": 191.0, "vv": 229.2, "testes": 0}, "VIDA_LDH 75 ML - DC2": {"vt": 73.4, "vc": 30.0, "vv": 36.0, "testes": 0}, "VIDA_LIPASE DIRETA 75 ML - DC2": {"vt": 736.0, "vc": 279.0, "vv": 334.8, "testes": 0}, "VIDA_MAGNESIO 100ML - DC2": {"vt": 83.95, "vc": 30.0, "vv": 36.0, "testes": 0}, "VIDA_PCR 150ML - DC2": {"vt": 800.9, "vc": 375.0, "vv": 450.0, "testes": 0}, "VIDA_PROTEINAS TOTAIS 240ML - DC2": {"vt": 52.7, "vc": 29.0, "vv": 34.8, "testes": 0}, "VIDA_PROTEINA URINARIA + CONTROLE 100ML - DC2": {"vt": 85.9, "vc": 22.0, "vv": 26.4, "testes": 0}, "VIDA_TGO CINETICO 150ML - DC2": {"vt": 226.0, "vc": 60.0, "vv": 72.0, "testes": 0}, "VIDA_TGP CINETICO 100ML - DC2": {"vt": 226.0, "vc": 60.0, "vv": 72.0, "testes": 0}, "VIDA_TRIGLICERIDES 240ML - DC2": {"vt": 374.0, "vc": 99.0, "vv": 118.8, "testes": 0}, "VIDA_UREIA UV 450ML - DC2": {"vt": 232.0, "vc": 133.0, "vv": 159.6, "testes": 0}}};      // { linha: { produto: {vt,vc,vv,testes} } } — catálogo de referência (preços/testes)
+const UNIDADES = ["ACARI (GAZOLLA)", "ADAO PEREIRA NUNES", "ALBERT", "ALOISIO DE CASTRO (IECAC)", "ANCHIETA", "ARY PARREIRAS", "AUSTIN", "AZEVEDO LIMA", "B. PORTUGUESA", "CARLOS CHAGAS", "CER BARRA", "CER LEBLON", "EDUARDO RABELLO", "EVANDRO FREIRE", "FONSECA (NTO)", "H. M. ROCHA MAIA", "H. MULHER MARISKA RIBEIRO", "H. SANTA TEREZINHA", "H.E. SANTA MARIA", "H.M. RIO DAS OSTRAS (NAELMA MONTEIRO)", "HOSPITAL DO ANDARAÍ", "IEC_HOSPITAL DO CÉREBRO", "IEDE", "INTO", "OCEANICO", "P. SOCORRO R. OSTRAS", "PAM DO MEIER", "PAULINO WERNECK", "PEDRO II", "PROCEM", "ROCHA FARIA", "SPA POSSE PETROPOLIS", "SPA SÃO PEDRO DO RIO", "UPA CASCATINHA PETROPOLIS", "UPA CENTRO PETROPOLIS", "UPA CIDADE DE DEUS", "UPA COLUMBANDÊ", "UPA COMENDADOR SOARES", "UPA COSTA BARROS", "UPA DEL CASTILHO", "UPA ENGENHO DE DENTRO", "UPA ITAIPAVA", "UPA JOÃO XXIII", "UPA MADUREIRA", "UPA MAGALHÃES BASTOS", "UPA MANGUINHOS", "UPA MARIO MONTEIRO", "UPA PACIENCIA", "UPA ROCHA MIRANDA", "UPA SENADOR CAMARÁ", "UPA SEPETIBA", "UPA VILA DE CAVA", "UPA VILA KENNEDY", "HOSPITAL ALBERTO TORRES", "HOSPITAL CAFFARO"];    // [ "UNIDADE A", ... ] — lista de referência para o dropdown de unidades
+const LINHAS = Object.keys(CATALOG);
+
+const STORAGE_KEY = 'lm-blessing-registros-v1';
+let DATA = [];                          // dashboard inicia vazio — só é populado ao importar a planilha
+let DELETED_LOG = [];                   // auditoria de registros excluídos pelo dashboard (para marcação na exportação)
+let RESUMO_LOC = { contadores:0, locacoesFixas:0, descontoTabela:0, hasData:false };
+let LOC_ROWS = [];        // linhas da aba "LOCAÇÕES [CLIENTE]" (item a item) — usadas p/ recalcular os cards conforme o filtro
+let CONTADORES_MAP = {};  // { unidade: valorTestesACobrar } — quadro "CONTADORES HEMATOLOGIA" da aba "RESUMO LOCAÇÕES"
+let CLIENT_NAME = 'BLESSING'; // nome do cliente, extraído dinamicamente do nome da aba "LOCAÇÕES [CLIENTE]" na importação
+let editingIndex = null; // null = novo
+let sortKey = 'data', sortDir = -1;
+
+/* ============================ UTIL ============================ */
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+const fmtBRL = (n) => (Number(n)||0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+const fmtNum = (n) => (Number(n)||0).toLocaleString('pt-BR');
+const fmtDate = (iso) => { if(!iso) return '—'; const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; };
+const todayISO = () => new Date().toISOString().slice(0,10);
+
+function toast(msg, isErr){
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' err' : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=> t.classList.remove('show'), 2600);
+}
+
+function nextPedido(){
+  return DATA.reduce((m,r)=> Math.max(m, Number(r.pedido)||0), 0) + 1;
+}
+
+const NOMES_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+function mesPredominante(rows){
+  if(!rows || !rows.length) return '—';
+  const counts = {};
+  rows.forEach(r=>{
+    if(r.data && /^\d{4}-\d{2}/.test(r.data)){
+      const ym = r.data.slice(0,7);
+      counts[ym] = (counts[ym]||0) + 1;
+    }
+  });
+  let best = null, bestCount = -1;
+  Object.entries(counts).forEach(([ym,c])=>{ if(c > bestCount){ best = ym; bestCount = c; } });
+  if(!best) return '—';
+  const [y,m] = best.split('-');
+  return `${NOMES_MESES[parseInt(m,10)-1]}/${y} (${bestCount})`;
+}
+
+/* ============================ PERSISTÊNCIA ============================ */
+async function loadData(){
+  try{
+    const res = await window.storage.get('registros', false);
+    if(res && res.value){
+      DATA = JSON.parse(res.value);
+      if(DATA.length) toast('Dados carregados do navegador.');
+      return;
+    }
+  }catch(e){ /* chave ainda não existe — dashboard permanece vazio até a importação */ }
+  DATA = [];
+}
+
+async function saveData(silent){
+  try{
+    await window.storage.set('registros', JSON.stringify(DATA), false);
+    $('#pillUpdated').textContent = new Date().toLocaleString('pt-BR');
+    if(!silent) toast('Salvo.');
+  }catch(e){
+    console.error(e);
+    if(!silent) toast('Falha ao salvar no navegador.', true);
+  }
+}
+
+async function loadDeletedLog(){
+  try{
+    const res = await window.storage.get('registrosExcluidos', false);
+    if(res && res.value){ DELETED_LOG = JSON.parse(res.value); return; }
+  }catch(e){ /* chave ainda não existe */ }
+  DELETED_LOG = [];
+}
+
+async function saveDeletedLog(){
+  try{ await window.storage.set('registrosExcluidos', JSON.stringify(DELETED_LOG), false); }
+  catch(e){ console.error(e); }
+}
+
+async function loadResumo(){
+  try{
+    const res = await window.storage.get('resumoLocacoes', false);
+    if(res && res.value){
+      RESUMO_LOC = JSON.parse(res.value);
+      return;
+    }
+  }catch(e){ /* chave ainda não existe */ }
+  RESUMO_LOC = { contadores:0, locacoesFixas:0, descontoTabela:0, hasData:false };
+}
+
+async function saveResumo(){
+  try{ await window.storage.set('resumoLocacoes', JSON.stringify(RESUMO_LOC), false); }
+  catch(e){ console.error(e); }
+}
+
+async function loadLocDetalhe(){
+  try{
+    const res = await window.storage.get('locBlessingRows', false);
+    if(res && res.value){ LOC_ROWS = JSON.parse(res.value); }
+  }catch(e){ LOC_ROWS = []; }
+  try{
+    const res2 = await window.storage.get('contadoresPorUnidade', false);
+    if(res2 && res2.value){ CONTADORES_MAP = JSON.parse(res2.value); }
+  }catch(e){ CONTADORES_MAP = {}; }
+}
+
+async function saveLocDetalhe(){
+  try{ await window.storage.set('locBlessingRows', JSON.stringify(LOC_ROWS), false); }
+  catch(e){ console.error(e); }
+  try{ await window.storage.set('contadoresPorUnidade', JSON.stringify(CONTADORES_MAP), false); }
+  catch(e){ console.error(e); }
+}
+
+async function loadClientName(){
+  try{
+    const res = await window.storage.get('clientName', false);
+    if(res && res.value){ CLIENT_NAME = JSON.parse(res.value); }
+  }catch(e){ /* mantém padrão */ }
+}
+
+async function saveClientName(){
+  try{ await window.storage.set('clientName', JSON.stringify(CLIENT_NAME), false); }
+  catch(e){ console.error(e); }
+}
+
+/* ============================ INIT SELECTS ============================ */
+function fillStaticSelects(){
+  const unidadeOptsHtml = UNIDADES.slice().sort().map(u=>`<option value="${u}">${u}</option>`).join('');
+  $('#fUnidade').innerHTML += unidadeOptsHtml;
+  $('#mUnidade').innerHTML = '<option value="">Selecione...</option>' + unidadeOptsHtml;
+
+  const linhaOptsHtml = LINHAS.slice().sort().map(l=>`<option value="${l}">${l}</option>`).join('');
+  $('#fLinha').innerHTML += linhaOptsHtml;
+  $('#mLinha').innerHTML = '<option value="">Selecione...</option>' + linhaOptsHtml;
+}
+
+function fillProdutoDatalist(linha){
+  const dl = $('#dlProdutos');
+  dl.innerHTML = '';
+  if(!linha || !CATALOG[linha]) { $('#mProduto').placeholder = 'Selecione a linha primeiro...'; return; }
+  $('#mProduto').placeholder = 'Digite ou selecione o produto...';
+  Object.keys(CATALOG[linha]).sort().forEach(p=>{
+    const opt = document.createElement('option');
+    opt.value = p;
+    dl.appendChild(opt);
+  });
+}
+
+function applyProdutoCatalog(){
+  const linha = $('#mLinha').value;
+  const produto = $('#mProduto').value;
+  const entry = CATALOG[linha] && CATALOG[linha][produto];
+  if(entry){
+    $('#mVTabela').value = entry.vt;
+    $('#mVVenda').value = entry.vv;
+    $('#mTestes').value = entry.testes;
+    $('#catalogHint').innerHTML = `Catálogo: V.Custo <b>${fmtBRL(entry.vc)}</b> · Rendimento <b>${fmtNum(entry.testes)}</b> testes/unid.`;
+  } else {
+    $('#catalogHint').textContent = produto ? 'Produto não encontrado no catálogo — preencha os valores manualmente.' : '';
+  }
+  recalcModal();
+}
+
+function recalcModal(){
+  const qt = Number($('#mQtde').value)||0;
+  const vt = Number($('#mVTabela').value)||0;
+  const vv = Number($('#mVVenda').value)||0;
+  const subtotal = qt*vv;
+  const totalTabela = qt*vt;
+  const dif = totalTabela - subtotal;
+  $('#calcSubtotal').textContent = fmtBRL(subtotal);
+  $('#calcDif').textContent = fmtBRL(dif);
+  $('#calcTotal').textContent = fmtBRL(totalTabela);
+}
+
+/* ============================ FILTROS ============================ */
+function getFiltered(){
+  const u = $('#fUnidade').value;
+  const l = $('#fLinha').value;
+  const p = $('#fProduto').value.trim().toLowerCase();
+  const di = $('#fDataIni').value;
+  const df = $('#fDataFim').value;
+  const ped = $('#fPedido').value.trim();
+  const nf = $('#fNF').value.trim().toLowerCase();
+
+  return DATA.filter(r=>{
+    if(u && r.unidade !== u) return false;
+    if(l && r.linha !== l) return false;
+    if(p && !(r.produto||'').toLowerCase().includes(p)) return false;
+    if(di && (!r.data || r.data < di)) return false;
+    if(df && (!r.data || r.data > df)) return false;
+    if(ped && String(r.pedido||'') !== ped) return false;
+    if(nf && !String(r.nf||'').toLowerCase().includes(nf)) return false;
+    return true;
+  });
+}
+
+/* Normaliza um nome de unidade para fins de correspondência entre a aba
+   "LOCAÇÕES BLESSING" (onde a unidade às vezes aparece com um sufixo/apelido
+   entre parênteses, ex.: "ACARI (GAZOLLA)") e a aba "RESUMO LOCAÇÕES" (onde a
+   mesma unidade aparece só como "ACARI" no quadro CONTADORES HEMATOLOGIA).
+   Remove acentos, caixa, espaços duplicados e qualquer sufixo entre parênteses. */
+function normalizeUnidade(nome){
+  return stripAccents(nome).replace(/\s*\([^)]*\)\s*$/,'').replace(/\s+/g,' ').trim();
+}
+
+/* Recalcula "Valor proveniente dos contadores", "Locações fixas" e "Desconto valor de
+   tabela" a partir dos dados item-a-item (LOC_ROWS / CONTADORES_MAP), restritos ao
+   filtro de Unidade/Linha ativo no dashboard — assim, ao filtrar, esses montantes
+   acompanham o volume de registros reunidos em vez de ficarem travados no total da
+   planilha. "Contadores" só entra no cálculo para as unidades que efetivamente têm
+   equipamento de hematologia (linha com TIPO.LOC = "TESTE") dentro do filtro atual —
+   se o filtro de Linha excluir HEMATOLOGIA, ou a unidade não tiver contador, o valor
+   daquela unidade não é somado.
+
+   IMPORTANTE: sem nenhum filtro de Unidade/Linha aplicado, o card deve reproduzir
+   EXATAMENTE o valor consolidado da aba "RESUMO LOCAÇÕES" (RESUMO_LOC), calculado
+   uma única vez na importação a partir de TODAS as unidades do quadro CONTADORES
+   HEMATOLOGIA. Recalcular esse total via casamento de nome de unidade entre as
+   abas "LOCAÇÕES BLESSING" e "RESUMO LOCAÇÕES" é arriscado porque os nomes nem
+   sempre batem 100% entre as duas planilhas (ex.: "ACARI" vs "ACARI (GAZOLLA)"),
+   o que já fez o card ficar menor que o valor real da aba em pelo menos uma
+   competência. Por isso, o recorte item-a-item (com correspondência de nome,
+   agora com normalização/fallback) só é usado quando algum filtro está ativo. */
+function getResumoLocacoesAtual(){
+  const unidadeFiltro = $('#fUnidade').value;
+  const linhaFiltro = $('#fLinha').value;
+
+  const locRowsFiltrados = LOC_ROWS.filter(r=>{
+    if(unidadeFiltro && r.unidade !== unidadeFiltro) return false;
+    if(linhaFiltro && r.linha !== linhaFiltro) return false;
+    return true;
+  });
+
+  const locacoesFixas = locRowsFiltrados
+    .filter(r=> r.tipoLoc === 'FIXA')
+    .reduce((s,r)=> s + (Number(r.locUnit)||0), 0);
+
+  const descontoTabela = locRowsFiltrados
+    .filter(r=> r.tipoLoc === 'TESTE')
+    .reduce((s,r)=> s + (Number(r.totalTabela)||0), 0);
+
+  // Sem filtro algum: usa o total oficial importado da aba "RESUMO LOCAÇÕES"
+  // (soma de todas as unidades do quadro CONTADORES HEMATOLOGIA), garantindo
+  // paridade exata com a planilha, independentemente de eventuais divergências
+  // de nome de unidade entre abas.
+  if(!unidadeFiltro && !linhaFiltro){
+    return {
+      contadores: Number(RESUMO_LOC.contadores)||0,
+      locacoesFixas,
+      descontoTabela,
+      hasData: RESUMO_LOC.hasData
+    };
+  }
+
+  // Com filtro ativo: soma o contador das unidades que efetivamente têm
+  // equipamento de hematologia (TIPO.LOC="TESTE") dentro do recorte atual,
+  // com correspondência exata do nome e, na falta dela, correspondência
+  // normalizada (sem acento/caixa/espaços e ignorando sufixo entre parênteses)
+  // para cobrir apelidos de unidade divergentes entre as abas.
+  const unidadesComContadorNoFiltro = new Set(
+    locRowsFiltrados.filter(r=> r.tipoLoc === 'TESTE').map(r=> r.unidade)
+  );
+  const normalizedContadoresMap = {};
+  Object.keys(CONTADORES_MAP).forEach(k=>{
+    normalizedContadoresMap[normalizeUnidade(k)] = CONTADORES_MAP[k];
+  });
+  let contadores = 0;
+  unidadesComContadorNoFiltro.forEach(u=>{
+    let v = CONTADORES_MAP[u];
+    if(v === undefined){ v = normalizedContadoresMap[normalizeUnidade(u)]; }
+    contadores += Number(v) || 0;
+  });
+
+  return { contadores, locacoesFixas, descontoTabela, hasData: RESUMO_LOC.hasData };
+}
+
+/* ============================ RELATÓRIOS (seletor) ============================ */
+/* Aplica os mesmos filtros de Unidade/Linha do painel de Filtros às linhas
+   item-a-item da aba "LOCAÇÕES [CLIENTE]" — usado pelos relatórios de
+   Faturamento por Linha e Locações Fixas e Variáveis. */
+function getFilteredLocRows(){
+  const u = $('#fUnidade').value;
+  const l = $('#fLinha').value;
+  return LOC_ROWS.filter(r=>{
+    if(u && r.unidade !== u) return false;
+    if(l && r.linha !== l) return false;
+    return true;
+  });
+}
+
+/* Cards "Valor proveniente dos contadores", "Locações fixas", "Desconto valor de
+   tabela" e "Montante a cobrar do cliente" — os mesmos do resumo principal do
+   dashboard (getResumoLocacoesAtual), reaproveitados em TODOS os relatórios para
+   manter esses quatro totais sempre visíveis, seja qual for o relatório escolhido. */
+function buildResumoLocacoesCards(valorTabela){
+  const resumo = getResumoLocacoesAtual();
+  const montante = (Number(resumo.locacoesFixas)||0) + (Number(resumo.contadores)||0) - (Number(resumo.descontoTabela)||0) + (Number(valorTabela)||0);
+  return [
+    {k:'Valor proveniente dos contadores', v: fmtBRL(resumo.contadores), cls:'c-teal'},
+    {k:'Locações fixas', v: fmtBRL(resumo.locacoesFixas), cls:'c-amber'},
+    {k:'Desconto valor de tabela', v: fmtBRL(resumo.descontoTabela), cls:'c-coral'},
+    {k:'Montante a cobrar do cliente', v: fmtBRL(montante), cls:'c-navy'},
+  ].map(c=>`<div class="card ${c.cls}"><p class="k">${c.k}${resumo.hasData ? '' : ' · aguardando importação'}</p><p class="v">${c.v}</p></div>`).join('');
+}
+
+/* Gráfico de barras horizontais simples (CSS), sem dependência externa —
+   recebe um mapa {rótulo: valor} e retorna o HTML das top-8 barras. */
+function buildBarChart(dataMap, valueFmt){
+  const entries = Object.entries(dataMap).filter(([k])=>k && k!=='undefined').sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if(!entries.length) return '<p style="color:var(--ink-400);font-size:12px;margin:0;">Sem dados para o filtro atual.</p>';
+  const max = entries[0][1] || 1;
+  return entries.map(([k,v])=>`
+    <div class="bar-row">
+      <span class="bar-label" title="${k}">${k}</span>
+      <span class="bar-track"><span class="bar-fill" style="width:${Math.max(0, v/max*100)}%"></span></span>
+      <span class="bar-value">${valueFmt(v)}</span>
+    </div>`).join('');
+}
+
+/* ---- Relatório 1: Relatório Analítico (fonte: BASE_2026 → DATA filtrada) ---- */
+function renderRelatorioAnalitico(rows, valorTabela){
+  $('#reportPanelTitle').textContent = 'Relatório Analítico';
+
+  const totalReg = rows.length;
+  const qtdeTotal = rows.reduce((s,r)=>s+(Number(r.qtde)||0),0);
+  const vendaTotal = rows.reduce((s,r)=>s+(Number(r.vsubtot)||0),0);
+  const tabelaTotal = rows.reduce((s,r)=>s+(Number(r.totaltabela)||0),0);
+  const unidadesAtivas = new Set(rows.map(r=>r.unidade)).size;
+
+  $('#reportCards').innerHTML = [
+    {k:'Registros', v: fmtNum(totalReg), cls:'c-navy'},
+    {k:'Qtde. total', v: fmtNum(qtdeTotal), cls:'c-teal'},
+    {k:'V.Subtot.Venda', v: fmtBRL(vendaTotal), cls:'c-teal'},
+    {k:'Total de Tabela', v: fmtBRL(tabelaTotal), cls:'c-amber'},
+    {k:'Unidades no filtro', v: fmtNum(unidadesAtivas), cls:'c-navy'},
+  ].map(c=>`<div class="card ${c.cls}"><p class="k">${c.k}</p><p class="v">${c.v}</p></div>`).join('')
+    + buildResumoLocacoesCards(valorTabela);
+
+  const byUnidade = {}, byLinha = {};
+  rows.forEach(r=>{
+    if(r.unidade) byUnidade[r.unidade] = (byUnidade[r.unidade]||0) + (Number(r.vsubtot)||0);
+    if(r.linha) byLinha[r.linha] = (byLinha[r.linha]||0) + (Number(r.vsubtot)||0);
+  });
+  $('#reportCharts').innerHTML = `
+    <div class="chart-row">
+      <div class="chart-box"><h4>Venda por Unidade (top 8)</h4>${buildBarChart(byUnidade, fmtBRL)}</div>
+      <div class="chart-box"><h4>Venda por Linha (top 8)</h4>${buildBarChart(byLinha, fmtBRL)}</div>
+    </div>`;
+
+  if(!rows.length){
+    $('#reportBody').innerHTML = '<p class="rp-empty">Nenhum registro para os filtros selecionados.</p>';
+    return;
+  }
+  const sorted = rows.slice().sort((a,b)=> (a.unidade||'').localeCompare(b.unidade||'') || (a.data||'').localeCompare(b.data||''));
+
+  const grupos = {};
+  sorted.forEach(r=>{
+    const u = r.unidade || '—';
+    (grupos[u] = grupos[u] || []).push(r);
+  });
+
+  let body = '';
+  Object.keys(grupos).sort().forEach(u=>{
+    const rowsU = grupos[u];
+    const subQtde = rowsU.reduce((s,r)=>s+(Number(r.qtde)||0),0);
+    const subVenda = rowsU.reduce((s,r)=>s+(Number(r.vsubtot)||0),0);
+    const subTabela = rowsU.reduce((s,r)=>s+(Number(r.totaltabela)||0),0);
+    body += `<div class="group-block">
+      <div class="group-title"><span>${u}</span><span>Venda ${fmtBRL(subVenda)} · Tabela ${fmtBRL(subTabela)}</span></div>
+      <table class="rp-table rp-table-analitico"><thead><tr>
+        <th>Unidade</th><th>Linha</th><th>Produto</th><th class="num-th">Qtde</th><th>Data</th>
+        <th class="num-th">V.Subtot.Venda</th><th class="num-th">Total de Tabela</th><th>NF</th>
+      </tr></thead><tbody>`;
+    rowsU.forEach(r=>{
+      body += `<tr>
+        <td>${r.unidade??''}</td><td><span class="tag">${r.linha??''}</span></td><td>${r.produto??''}</td>
+        <td class="num-cell">${fmtNum(r.qtde)}</td><td>${fmtDate(r.data)}</td>
+        <td class="num-cell">${fmtBRL(r.vsubtot)}</td><td class="num-cell">${fmtBRL(r.totaltabela)}</td>
+        <td>${r.nf??''}</td>
+      </tr>`;
+    });
+    body += `<tr class="rp-subtotal">
+      <td colspan="3">Subtotal ${u}</td><td class="num-cell">${fmtNum(subQtde)}</td><td></td>
+      <td class="num-cell">${fmtBRL(subVenda)}</td><td class="num-cell">${fmtBRL(subTabela)}</td><td></td>
+    </tr>`;
+    body += `</tbody></table></div>`;
+  });
+  $('#reportBody').innerHTML = `<div class="rp-table-wrap" style="padding-top:0;">${body}</div>`;
+}
+
+/* ---- Relatório 2: Faturamento por Linha (fonte: aba "LOCAÇÕES [CLIENTE]",
+   agrupada por Unidade → Linha — equivalente à aba "RESUMO POR UNIDADE" da
+   planilha, que é uma tabela dinâmica construída a partir dos mesmos dados). ---- */
+function renderFaturamentoPorLinha(valorTabela){
+  $('#reportPanelTitle').textContent = 'Faturamento por Linha';
+  const locRows = getFilteredLocRows();
+
+  const totFixa = locRows.reduce((s,r)=>s+(Number(r.locFixTotal)||0),0);
+  const totVendas = locRows.reduce((s,r)=>s+(Number(r.venda)||0),0);
+  const totVariavel = locRows.reduce((s,r)=>s+(Number(r.locVariavel)||0),0);
+  // "Soma de Total" = LOCAÇÃO FIXA + VENDAS + LOCAÇÃO VARIÁVEL, exatamente como a
+  // aba "RESUMO POR UNIDADE" da planilha calcula (a coluna TOTAL TABELA de cada
+  // linha item-a-item nem sempre inclui a locação fixa, então somar essa coluna
+  // diretamente sub-avalia o total em relação ao pivot original).
+  const totGeral = totFixa + totVendas + totVariavel;
+  $('#reportCards').innerHTML = [
+    {k:'Locação Fixa', v: fmtBRL(totFixa), cls:'c-amber'},
+    {k:'Vendas', v: fmtBRL(totVendas), cls:'c-teal'},
+    {k:'Locação Variável', v: fmtBRL(totVariavel), cls:'c-teal'},
+    {k:'Soma de Total', v: fmtBRL(totGeral), cls:'c-navy'},
+  ].map(c=>`<div class="card ${c.cls}"><p class="k">${c.k}</p><p class="v">${c.v}</p></div>`).join('')
+    + buildResumoLocacoesCards(valorTabela);
+
+  if(!locRows.length){
+    $('#reportCharts').innerHTML = '';
+    $('#reportBody').innerHTML = '<p class="rp-empty">Nenhum dado de locação disponível — importe a planilha para preencher este relatório.</p>';
+    return;
+  }
+
+  const byUnidade = {};
+  locRows.forEach(r=>{
+    const u = r.unidade || '—';
+    const l = r.linha || '—';
+    byUnidade[u] = byUnidade[u] || {};
+    byUnidade[u][l] = byUnidade[u][l] || {fixa:0, vendas:0, variavel:0, total:0};
+    byUnidade[u][l].fixa += Number(r.locFixTotal)||0;
+    byUnidade[u][l].vendas += Number(r.venda)||0;
+    byUnidade[u][l].variavel += Number(r.locVariavel)||0;
+  });
+  // total = fixa + vendas + variável, para bater exatamente com "Soma de TOTAL" da
+  // aba "RESUMO POR UNIDADE" (ver nota acima sobre a coluna TOTAL TABELA por linha)
+  Object.values(byUnidade).forEach(linhas=>{
+    Object.values(linhas).forEach(o=>{ o.total = o.fixa + o.vendas + o.variavel; });
+  });
+
+  const byUnidadeTotals = {};
+  Object.keys(byUnidade).forEach(u=>{
+    byUnidadeTotals[u] = Object.values(byUnidade[u]).reduce((s,o)=>s+o.total,0);
+  });
+  $('#reportCharts').innerHTML = `
+    <div class="chart-row" style="grid-template-columns:1fr;">
+      <div class="chart-box"><h4>Total por Unidade (top 8)</h4>${buildBarChart(byUnidadeTotals, fmtBRL)}</div>
+    </div>`;
+
+  let body = '';
+  Object.keys(byUnidade).sort().forEach(u=>{
+    const linhas = byUnidade[u];
+    const subFixa = Object.values(linhas).reduce((s,o)=>s+o.fixa,0);
+    const subVendas = Object.values(linhas).reduce((s,o)=>s+o.vendas,0);
+    const subVariavel = Object.values(linhas).reduce((s,o)=>s+o.variavel,0);
+    const subTotal = Object.values(linhas).reduce((s,o)=>s+o.total,0);
+    body += `<div class="group-block">
+      <div class="group-title"><span>${u}</span><span>${fmtBRL(subTotal)}</span></div>
+      <table class="rp-table"><thead><tr>
+        <th>Linha</th><th class="num-th">Locação Fixa</th><th class="num-th">Vendas</th><th class="num-th">Locação Variável</th><th class="num-th">Total</th>
+      </tr></thead><tbody>`;
+    Object.keys(linhas).sort().forEach(l=>{
+      const o = linhas[l];
+      body += `<tr>
+        <td>${l}</td><td class="num-cell">${fmtBRL(o.fixa)}</td><td class="num-cell">${fmtBRL(o.vendas)}</td>
+        <td class="num-cell">${fmtBRL(o.variavel)}</td><td class="num-cell">${fmtBRL(o.total)}</td>
+      </tr>`;
+    });
+    body += `<tr class="rp-subtotal">
+      <td>Subtotal ${u}</td><td class="num-cell">${fmtBRL(subFixa)}</td><td class="num-cell">${fmtBRL(subVendas)}</td>
+      <td class="num-cell">${fmtBRL(subVariavel)}</td><td class="num-cell">${fmtBRL(subTotal)}</td>
+    </tr>`;
+    body += `</tbody></table></div>`;
+  });
+  $('#reportBody').innerHTML = `<div class="rp-table-wrap" style="padding-top:0;">${body}</div>`;
+}
+
+/* ---- Relatório 3: Locações Fixas e Variáveis (fonte: aba "LOCAÇÕES [CLIENTE]",
+   item a item — nome do cliente extraído dinamicamente na importação). ---- */
+function renderLocacoesFixasVariaveis(valorTabela){
+  $('#reportPanelTitle').textContent = `Locações Fixas e Variáveis — ${CLIENT_NAME}`;
+  const locRows = getFilteredLocRows();
+
+  const totQtde = locRows.reduce((s,r)=>s+(Number(r.qtde)||0),0);
+  const totFixa = locRows.reduce((s,r)=>s+(Number(r.locFixTotal)||0),0);
+  const totVariavel = locRows.reduce((s,r)=>s+(Number(r.locVariavel)||0),0);
+  const totVenda = locRows.reduce((s,r)=>s+(Number(r.venda)||0),0);
+  const totTabela = locRows.reduce((s,r)=>s+(Number(r.totalTabela)||0),0); // coluna "TOTAL TABELA" original da planilha
+  const totGeral = totFixa + totVariavel + totVenda;                       // TOTAL GERAL = FIXA + VARIÁVEL + VENDA
+  $('#reportCards').innerHTML = [
+    {k:'Equipamentos no filtro', v: fmtNum(locRows.length), cls:'c-navy'},
+    {k:'Locação Fixa Total', v: fmtBRL(totFixa), cls:'c-amber'},
+    {k:'Locação Variável Total', v: fmtBRL(totVariavel), cls:'c-teal'},
+    {k:'Venda Total', v: fmtBRL(totVenda), cls:'c-teal'},
+    {k:'Total de Tabela', v: fmtBRL(totTabela), cls:'c-navy'},
+    {k:'Total Geral', v: fmtBRL(totGeral), cls:'c-navy'},
+  ].map(c=>`<div class="card ${c.cls}"><p class="k">${c.k}</p><p class="v">${c.v}</p></div>`).join('')
+    + buildResumoLocacoesCards(valorTabela);
+
+  if(!locRows.length){
+    $('#reportCharts').innerHTML = '';
+    $('#reportBody').innerHTML = '<p class="rp-empty">Nenhum dado de locação disponível — importe a planilha para preencher este relatório.</p>';
+    return;
+  }
+
+  // ---- Resumo por Linha (com totalizador) ----
+  const byLinha = {};
+  locRows.forEach(r=>{
+    const l = r.linha || '—';
+    const totalItem = (Number(r.locFixTotal)||0) + (Number(r.locVariavel)||0) + (Number(r.venda)||0);
+    byLinha[l] = (byLinha[l]||0) + totalItem;
+  });
+  $('#reportCharts').innerHTML = `
+    <div class="chart-row" style="grid-template-columns:1fr;">
+      <div class="chart-box">
+        <h4>Total de Locações por Linha</h4>
+        ${buildBarChart(byLinha, fmtBRL)}
+        <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--navy-900);">
+          <span>Total Geral</span><span style="font-family:var(--font-mono);">${fmtBRL(totGeral)}</span>
+        </div>
+      </div>
+    </div>`;
+
+  // ---- Listagem organizada por Linha, com totalizador a cada bloco ----
+  const byLinhaRows = {};
+  locRows.forEach(r=>{
+    const l = r.linha || '—';
+    (byLinhaRows[l] = byLinhaRows[l] || []).push(r);
+  });
+
+  let body = '';
+  Object.keys(byLinhaRows).sort().forEach(l=>{
+    const grp = byLinhaRows[l].slice().sort((a,b)=> (a.unidade||'').localeCompare(b.unidade||'') || (a.equipamento||'').localeCompare(b.equipamento||''));
+    const subQtde = grp.reduce((s,r)=>s+(Number(r.qtde)||0),0);
+    const subFixa = grp.reduce((s,r)=>s+(Number(r.locFixTotal)||0),0);
+    const subVariavel = grp.reduce((s,r)=>s+(Number(r.locVariavel)||0),0);
+    const subVenda = grp.reduce((s,r)=>s+(Number(r.venda)||0),0);
+    const subTabela = grp.reduce((s,r)=>s+(Number(r.totalTabela)||0),0);
+    const subGeral = subFixa + subVariavel + subVenda;
+    body += `<div class="group-block">
+      <div class="group-title"><span>${l}</span><span>${fmtBRL(subGeral)}</span></div>
+      <table class="rp-table"><thead><tr>
+        <th>Unidade</th><th>Equipamento</th><th class="num-th">Qtde</th>
+        <th class="num-th">Loc.Fix.Total</th><th class="num-th">Loc.Variável</th><th class="num-th">Venda</th>
+        <th class="num-th">Total de Tabela</th><th class="num-th">Total Geral</th>
+      </tr></thead><tbody>`;
+    grp.forEach(r=>{
+      const totalItem = (Number(r.locFixTotal)||0) + (Number(r.locVariavel)||0) + (Number(r.venda)||0);
+      body += `<tr>
+        <td>${r.unidade??''}</td><td>${r.equipamento??''}</td><td class="num-cell">${fmtNum(r.qtde)}</td>
+        <td class="num-cell">${fmtBRL(r.locFixTotal)}</td><td class="num-cell">${fmtBRL(r.locVariavel)}</td><td class="num-cell">${fmtBRL(r.venda)}</td>
+        <td class="num-cell">${fmtBRL(r.totalTabela)}</td><td class="num-cell">${fmtBRL(totalItem)}</td>
+      </tr>`;
+    });
+    body += `<tr class="rp-subtotal">
+      <td colspan="2">Subtotal ${l}</td><td class="num-cell">${fmtNum(subQtde)}</td>
+      <td class="num-cell">${fmtBRL(subFixa)}</td><td class="num-cell">${fmtBRL(subVariavel)}</td><td class="num-cell">${fmtBRL(subVenda)}</td>
+      <td class="num-cell">${fmtBRL(subTabela)}</td><td class="num-cell">${fmtBRL(subGeral)}</td>
+    </tr>`;
+    body += `</tbody></table></div>`;
+  });
+
+  // ---- Barra totalizadora das colunas da listagem exibida ----
+  body += `<div class="footbar" style="margin:0 0 18px; border-top:2px solid var(--navy-900); flex-wrap:wrap;">
+    <span><b>Totais da listagem</b> · ${locRows.length} registro(s)</span>
+    <span>
+      <b>Qtde:</b> ${fmtNum(totQtde)} &nbsp;·&nbsp;
+      <b>Loc.Fix.Total:</b> ${fmtBRL(totFixa)} &nbsp;·&nbsp;
+      <b>Loc.Variável:</b> ${fmtBRL(totVariavel)} &nbsp;·&nbsp;
+      <b>Venda:</b> ${fmtBRL(totVenda)} &nbsp;·&nbsp;
+      <b>Total de Tabela:</b> ${fmtBRL(totTabela)} &nbsp;·&nbsp;
+      <b>Total Geral:</b> ${fmtBRL(totGeral)}
+    </span>
+  </div>`;
+
+  $('#reportBody').innerHTML = `<div class="rp-table-wrap" style="padding-top:0;">${body}</div>`;
+}
+
+/* Dispatcher: decide qual relatório desenhar com base no seletor global.
+   Enquanto o usuário não escolher um relatório no menu, nenhum relatório é
+   renderizado — o painel fica em estado de espera. */
+function renderReportPanel(filteredRows, valorTabela){
+  const type = $('#reportSelect') ? $('#reportSelect').value : '';
+  if(!type){
+    $('#reportPanelTitle').textContent = 'Nenhum relatório selecionado';
+    $('#reportCards').innerHTML = '';
+    $('#reportCharts').innerHTML = '';
+    $('#reportBody').innerHTML = '<p class="rp-empty">Selecione um relatório no menu acima ("Filtros") para visualizar e imprimir.</p>';
+    return;
+  }
+  if(type === 'faturamento_linha') renderFaturamentoPorLinha(valorTabela);
+  else if(type === 'locacoes') renderLocacoesFixasVariaveis(valorTabela);
+  else renderRelatorioAnalitico(filteredRows, valorTabela);
+}
+
+/* ============================ RENDER ============================ */
+function renderCards(rows){
+  const totalReg = rows.length;
+  const qtdeTotal = rows.reduce((s,r)=>s+(Number(r.qtde)||0),0);
+  const vendaTotal = rows.reduce((s,r)=>s+(Number(r.vsubtot)||0),0);
+  const tabelaTotal = rows.reduce((s,r)=>s+(Number(r.totaltabela)||0),0);
+  const difTotal = rows.reduce((s,r)=>s+(Number(r.diftabela)||0),0);
+  const unidadesAtivas = new Set(rows.map(r=>r.unidade)).size;
+
+  const cards = [
+    {k:'Registros', v: fmtNum(totalReg), cls:'c-navy'},
+    {k:'Qtde. total', v: fmtNum(qtdeTotal), cls:'c-teal'},
+    {k:'Valor venda', v: fmtBRL(vendaTotal), cls:'c-teal'},
+    {k:'Valor tabela', v: fmtBRL(tabelaTotal), cls:'c-amber'},
+    {k:'Diferença (desconto)', v: fmtBRL(difTotal), cls:'c-coral'},
+    {k:'Unidades no filtro', v: fmtNum(unidadesAtivas), cls:'c-navy'},
+  ];
+  $('#cardsRow').innerHTML = cards.map(c=>`
+    <div class="card ${c.cls}">
+      <p class="k">${c.k}</p>
+      <p class="v">${c.v}</p>
+    </div>`).join('');
+  return tabelaTotal;
+}
+
+function renderResumoCards(valorTabela){
+  const resumo = getResumoLocacoesAtual();
+  const montante = (Number(resumo.locacoesFixas)||0) + (Number(resumo.contadores)||0) - (Number(resumo.descontoTabela)||0) + (Number(valorTabela)||0);
+  const cards = [
+    {k:'Valor proveniente dos contadores', v: fmtBRL(resumo.contadores), cls:'c-teal'},
+    {k:'Locações fixas', v: fmtBRL(resumo.locacoesFixas), cls:'c-amber'},
+    {k:'Desconto valor de tabela', v: fmtBRL(resumo.descontoTabela), cls:'c-coral'},
+    {k:'Montante a cobrar do cliente', v: fmtBRL(montante), cls:'c-navy'},
+  ];
+  $('#cardsRowLocacoes').innerHTML = cards.map(c=>`
+    <div class="card ${c.cls}">
+      <p class="k">${c.k}${resumo.hasData ? '' : ' · aguardando importação'}</p>
+      <p class="v">${c.v}</p>
+    </div>`).join('');
+}
+
+function renderTable(){
+  const rows = getFiltered();
+  rows.sort((a,b)=>{
+    let va = a[sortKey], vb = b[sortKey];
+    if(typeof va === 'string') va = va.toLowerCase();
+    if(typeof vb === 'string') vb = vb.toLowerCase();
+    if(va === undefined || va === null) va = '';
+    if(vb === undefined || vb === null) vb = '';
+    if(va < vb) return -1*sortDir;
+    if(va > vb) return 1*sortDir;
+    return 0;
+  });
+
+  const tabelaTotal = renderCards(rows);
+  renderResumoCards(tabelaTotal);
+  renderReportPanel(rows, tabelaTotal);
+  $('#filterCount').textContent = rows.length + ' registros no filtro';
+  $('#tableCount').textContent = rows.length;
+  $('#showingCount').textContent = rows.length;
+  $('#totalCount').textContent = DATA.length;
+  $('#pillTotal').textContent = DATA.length;
+  $('#pillUnidades').textContent = new Set(DATA.map(r=>r.unidade)).size;
+  $('#pillMesPredominante').textContent = mesPredominante(DATA);
+
+  $$('#dataTable thead th[data-k]').forEach(th=>{
+    th.classList.toggle('sorted', th.dataset.k===sortKey && sortDir===-1);
+    th.classList.toggle('sorted-asc', th.dataset.k===sortKey && sortDir===1);
+  });
+
+  const tbody = $('#tbody');
+  if(rows.length === 0){
+    tbody.innerHTML = `<tr><td colspan="14"><div class="empty-state"><b>Nenhum registro encontrado</b>Ajuste os filtros ou cadastre um novo pedido.</div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r=>{
+    const idx = DATA.indexOf(r);
+    const statusTag = r._status === 'NOVO' ? '<span class="tag tag-new">novo</span>'
+      : r._status === 'EDITADO' ? '<span class="tag tag-edit">editado</span>' : '';
+    return `<tr>
+      <td>${r.pedido ?? ''}</td>
+      <td>${r.nf ?? ''}</td>
+      <td class="no-print">
+        <div class="row-actions">
+          <button class="icon-btn" title="Editar" onclick="openEdit(${idx})">✎</button>
+          <button class="icon-btn danger" title="Excluir" onclick="deleteRow(${idx})">🗑</button>
+          ${statusTag}
+        </div>
+      </td>
+      <td>${r.unidade ?? ''}</td>
+      <td><span class="tag">${r.linha ?? ''}</span></td>
+      <td>${r.produto ?? ''}</td>
+      <td class="num-cell">${fmtNum(r.qtde)}</td>
+      <td>${fmtDate(r.data)}</td>
+      <td class="num-cell">${fmtBRL(r.vtabela)}</td>
+      <td class="num-cell">${fmtBRL(r.vvenda)}</td>
+      <td class="num-cell">${fmtBRL(r.vsubtot)}</td>
+      <td class="num-cell">${fmtBRL(r.diftabela)}</td>
+      <td class="num-cell">${fmtBRL(r.totaltabela)}</td>
+      <td class="num-cell">${fmtNum(r.testes)}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ============================ SORT ============================ */
+$$('#dataTable thead th[data-k]').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    if(sortKey === th.dataset.k){ sortDir *= -1; }
+    else { sortKey = th.dataset.k; sortDir = 1; }
+    renderTable();
+  });
+});
+
+/* ============================ MODAL CRUD ============================ */
+function openModal(){ $('#modalBackdrop').classList.add('open'); }
+function closeModal(){ $('#modalBackdrop').classList.remove('open'); }
+
+function openNew(){
+  editingIndex = null;
+  $('#modalTitle').textContent = 'Novo pedido';
+  $('#mUnidade').value = '';
+  $('#mLinha').value = '';
+  fillProdutoDatalist('');
+  $('#mProduto').value = '';
+  $('#mQtde').value = 1;
+  $('#mData').value = todayISO();
+  $('#mVTabela').value = 0;
+  $('#mVVenda').value = 0;
+  $('#mTestes').value = 0;
+  $('#mPedido').value = nextPedido();
+  $('#mNF').value = '';
+  $('#catalogHint').textContent = '';
+  recalcModal();
+  openModal();
+}
+
+window.openEdit = function(idx){
+  const r = DATA[idx];
+  editingIndex = idx;
+  $('#modalTitle').textContent = 'Editar pedido #' + (r.pedido ?? '');
+  $('#mUnidade').value = r.unidade || '';
+  $('#mLinha').value = r.linha || '';
+  fillProdutoDatalist(r.linha);
+  $('#mProduto').value = r.produto || '';
+  $('#mQtde').value = r.qtde || 0;
+  $('#mData').value = r.data || todayISO();
+  $('#mVTabela').value = r.vtabela || 0;
+  $('#mVVenda').value = r.vvenda || 0;
+  $('#mTestes').value = r.testes || 0;
+  $('#mPedido').value = r.pedido || '';
+  $('#mNF').value = r.nf || '';
+  $('#catalogHint').textContent = '';
+  recalcModal();
+  openModal();
+};
+
+window.deleteRow = function(idx){
+  const r = DATA[idx];
+  if(!confirm(`Excluir o pedido #${r.pedido} — ${r.produto} (${r.unidade})?`)) return;
+  DELETED_LOG.push({...r, _status:'EXCLUÍDO', _deletedAt: new Date().toISOString()});
+  DATA.splice(idx,1);
+  saveData();
+  saveDeletedLog();
+  renderTable();
+  toast('Registro excluído (mantido na auditoria para exportação).');
+};
+
+function saveModal(){
+  const unidade = $('#mUnidade').value;
+  const linha = $('#mLinha').value;
+  const produto = $('#mProduto').value.trim();
+  if(!unidade || !linha || !produto){
+    toast('Preencha Unidade, Linha e Produto.', true);
+    return;
+  }
+  const qtde = Number($('#mQtde').value)||0;
+  const vtabela = Number($('#mVTabela').value)||0;
+  const vvenda = Number($('#mVVenda').value)||0;
+  const testes = Number($('#mTestes').value)||0;
+  const vsubtot = qtde*vvenda;
+  const totaltabela = qtde*vtabela;
+  const diftabela = totaltabela - vsubtot;
+
+  let status = 'NOVO';
+  if(editingIndex !== null){
+    const prev = DATA[editingIndex]._status;
+    status = (prev === 'NOVO') ? 'NOVO' : 'EDITADO';
+  }
+
+  const record = {
+    unidade, linha, produto, qtde,
+    data: $('#mData').value || todayISO(),
+    vtabela, vvenda, vsubtot, diftabela,
+    pedido: Number($('#mPedido').value) || nextPedido(),
+    testes, totaltabela,
+    nf: $('#mNF').value.trim(),
+    _status: status
+  };
+
+  if(editingIndex === null){
+    DATA.push(record);
+  } else {
+    DATA[editingIndex] = record;
+  }
+  saveData();
+  renderTable();
+  closeModal();
+  toast(editingIndex === null ? 'Pedido cadastrado.' : 'Pedido atualizado.');
+}
+
+/* ============================ IMPORT / EXPORT EXCEL ============================ */
+function stripAccents(s){
+  return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
+}
+
+/* Localiza a aba "LOCAÇÕES [CLIENTE]" de forma flexível/dinâmica — o nome do cliente
+   (ex.: BLESSING) não é fixo no código, é lido a partir do próprio nome da aba. */
+function findLocacoesSheet(wb){
+  return wb.SheetNames.find(n=> stripAccents(n).startsWith('LOCA'));
+}
+
+/* Extrai o nome do cliente a partir do nome da aba "LOCAÇÕES [CLIENTE]"
+   (tudo que vem depois da primeira palavra "LOCAÇÕES"/"LOCAÇOES"). */
+function extractClientName(sheetName){
+  if(!sheetName) return CLIENT_NAME;
+  const parts = sheetName.trim().split(/\s+/);
+  const rest = parts.slice(1).join(' ').trim();
+  return rest || sheetName.trim();
+}
+
+/* Extrai as linhas da aba "LOCAÇÕES [CLIENTE]" (item a item), para que os cards de
+   Locações Fixas / Desconto Valor de Tabela e os relatórios de "Faturamento por Linha"
+   e "Locações Fixas e Variáveis" possam ser recalculados dinamicamente conforme o
+   filtro (Unidade/Linha) aplicado no dashboard, em vez de usar um total estático
+   da planilha. */
+function extractLocacoesBlessingRows(wb){
+  const sheetName = findLocacoesSheet(wb);
+  if(!sheetName) return { rows: [], clientName: null };
+  const ws = wb.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+  const headerRowIdx = rows.findIndex(r=> r.some(c=> stripAccents(c) === 'UNIDADE'));
+  if(headerRowIdx === -1) return { rows: [], clientName: extractClientName(sheetName) };
+  const headers = rows[headerRowIdx].map(h=> stripAccents(h));
+  const iUnidade = headers.indexOf('UNIDADE');
+  const iLinha = headers.indexOf('LINHA');
+  const iEquip = headers.findIndex(h=> h.includes('EQUIPAMENTO'));
+  const iQtde = headers.indexOf('QTDE');
+  const iTipoLoc = headers.findIndex(h=> h.includes('TIPO') && h.includes('LOC'));
+  const iLocUnit = headers.findIndex(h=> h.includes('LOC') && h.includes('UNIT'));         // LOC.UNIT
+  const iLocFixTotal = headers.findIndex(h=> h.includes('LOC') && h.includes('FIX'));      // LOC.FIX.TOTAL
+  const iLocVariavel = headers.findIndex(h=> h.includes('LOC') && h.includes('VARI'));     // LOC.VARIÁVEL
+  const iVenda = headers.indexOf('VENDA');                                                  // VENDA
+  const iTotalTabela = headers.findIndex(h=> h.includes('TOTAL') && h.includes('TABELA')); // TOTAL TABELA
+  const out = [];
+  for(let i=headerRowIdx+1;i<rows.length;i++){
+    const row = rows[i];
+    if(!row || iUnidade===-1 || !row[iUnidade]) continue; // pula linha em branco / linha TOTAL
+    out.push({
+      unidade: row[iUnidade],
+      linha: iLinha>-1 ? row[iLinha] : null,
+      equipamento: iEquip>-1 ? row[iEquip] : null,
+      qtde: iQtde>-1 ? (Number(row[iQtde])||0) : 0,
+      tipoLoc: iTipoLoc>-1 ? stripAccents(row[iTipoLoc]) : '',
+      locUnit: iLocUnit>-1 ? (Number(row[iLocUnit])||0) : 0,
+      locFixTotal: iLocFixTotal>-1 ? (Number(row[iLocFixTotal])||0) : 0,
+      locVariavel: iLocVariavel>-1 ? (Number(row[iLocVariavel])||0) : 0,
+      venda: iVenda>-1 ? (Number(row[iVenda])||0) : 0,
+      totalTabela: iTotalTabela>-1 ? (Number(row[iTotalTabela])||0) : 0,
+    });
+  }
+  return { rows: out, clientName: extractClientName(sheetName) };
+}
+
+/* Extrai o mapa Unidade -> "VALOR TESTES A COBRAR" do quadro "CONTADORES HEMATOLOGIA"
+   na aba "RESUMO LOCAÇÕES" (linha com os nomes das unidades + linha com os valores
+   logo abaixo), permitindo recalcular o card "Valor proveniente dos contadores" por
+   unidade quando o filtro de Unidade é aplicado no dashboard.
+
+   O quadro normalmente tem DUAS linhas rotuladas "VALOR TESTES A COBRAR": a primeira
+   é o valor bruto (que soma exatamente o total oficial "VALORES PROVENIENTES DOS
+   CONTADORES" da planilha) e a segunda é esse mesmo valor já descontado de
+   "VALOR DOS INSUMOS". Pegar a linha errada faz o card não bater com a aba. Para não
+   depender da ordem dessas linhas (que pode variar entre competências), a função
+   testa todas as linhas candidatas e escolhe a que soma exatamente o valor da célula
+   oficial "VALORES PROVENIENTES DOS CONTADORES" da própria planilha; só recorre à
+   primeira candidata encontrada se essa célula de conferência não existir. */
+function extractContadoresPorUnidade(wb){
+  const sheetName = wb.SheetNames.find(n=> /RESUMO/i.test(n) && /LOCA/i.test(n));
+  if(!sheetName) return {};
+  const ws = wb.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+
+  let unidadeRowIdx = -1;
+  for(let i=0;i<rows.length;i++){
+    const row = rows[i] || [];
+    if(row.some(c=> stripAccents(c) === 'UNIDADE')){ unidadeRowIdx = i; break; }
+  }
+  if(unidadeRowIdx === -1) return {};
+  const unidadeRow = rows[unidadeRowIdx];
+
+  // todas as linhas candidatas, na ordem em que aparecem na planilha
+  const candidateRowIdx = [];
+  for(let i=unidadeRowIdx+1;i<rows.length;i++){
+    const row = rows[i] || [];
+    if(row.some(c=> stripAccents(c).includes('VALOR TESTES A COBRAR'))) candidateRowIdx.push(i);
+  }
+  if(candidateRowIdx.length === 0) return {};
+
+  const buildMap = (valorRow)=>{
+    const map = {};
+    for(let c=0;c<unidadeRow.length;c++){
+      const nome = unidadeRow[c];
+      if(typeof nome === 'string' && nome.trim() && stripAccents(nome) !== 'UNIDADE'){
+        const v = valorRow[c];
+        if(typeof v === 'number') map[nome.trim()] = v;
+      }
+    }
+    return map;
+  };
+
+  // célula de conferência: total oficial "VALORES PROVENIENTES DOS CONTADORES",
+  // que aparece no quadro de TOTALIZAÇÃO da mesma aba, com o valor na célula
+  // imediatamente à direita do rótulo
+  let totalOficial = null;
+  for(let i=0;i<rows.length && totalOficial===null;i++){
+    const row = rows[i] || [];
+    for(let c=0;c<row.length;c++){
+      if(stripAccents(row[c]).includes('VALORES PROVENIENTES DOS CONTADORES')){
+        for(let cc=c+1; cc<row.length; cc++){
+          if(typeof row[cc] === 'number'){ totalOficial = row[cc]; break; }
+        }
+        break;
+      }
+    }
+  }
+
+  if(totalOficial === null || candidateRowIdx.length === 1){
+    return buildMap(rows[candidateRowIdx[0]]);
+  }
+
+  // escolhe a linha candidata cuja soma mais se aproxima do total oficial
+  let melhorMap = null, melhorDiff = Infinity;
+  candidateRowIdx.forEach(idx=>{
+    const map = buildMap(rows[idx]);
+    const soma = Object.values(map).reduce((s,v)=> s + (Number(v)||0), 0);
+    const diff = Math.abs(soma - totalOficial);
+    if(diff < melhorDiff){ melhorDiff = diff; melhorMap = map; }
+  });
+  return melhorMap;
+}
+
+function detectCol(headers, candidates){
+  const lower = headers.map(h=>String(h||'').toUpperCase().trim());
+  for(const c of candidates){
+    const i = lower.indexOf(c);
+    if(i>-1) return i;
+  }
+  return -1;
+}
+
+function excelDateToISO(v){
+  if(v instanceof Date) return v.toISOString().slice(0,10);
+  if(typeof v === 'number'){
+    const d = XLSX.SSF.parse_date_code(v);
+    if(d) return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+  }
+  if(typeof v === 'string'){
+    const m = v.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if(m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+    const m2 = v.match(/(\d{4})-(\d{2})-(\d{2})/);
+    if(m2) return v.slice(0,10);
+  }
+  return todayISO();
+}
+
+function importFile(file){
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      const wb = XLSX.read(e.target.result, {type:'binary', cellDates:true});
+      const sheetName = wb.SheetNames.find(n=>/BASE/i.test(n)) || wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+      const headerRowIdx = rows.findIndex(r=> r.some(c=> String(c||'').toUpperCase().includes('UNIDADE')));
+      if(headerRowIdx === -1){ toast('Não encontrei o cabeçalho (UNIDADE) na planilha.', true); return; }
+      const headers = rows[headerRowIdx];
+      const idx = {
+        unidade: detectCol(headers,['UNIDADE']),
+        linha: detectCol(headers,['LINHA']),
+        produto: detectCol(headers,['PRODUTO']),
+        qtde: detectCol(headers,['QTDE']),
+        data: detectCol(headers,['DATA']),
+        vtabela: detectCol(headers,['V. TABELA','V.TABELA']),
+        vvenda: detectCol(headers,['V.VENDA','V. VENDA']),
+        vsubtot: detectCol(headers,['V.SUBTOT.VENDA','V. SUBTOT.VENDA']),
+        diftabela: detectCol(headers,['DIF TABELA','DIF.TABELA']),
+        pedido: detectCol(headers,['PEDIDO_INT','PEDIDO']),
+        testes: detectCol(headers,['TESTES']),
+        totaltabela: detectCol(headers,['TOTAL_TABELA','TOTAL TABELA']),
+        nf: detectCol(headers,['NF']),
+      };
+      let imported = 0;
+      const newRecs = [];
+      for(let i=headerRowIdx+1;i<rows.length;i++){
+        const row = rows[i];
+        if(!row || idx.unidade===-1 || !row[idx.unidade]) continue;
+        const qtde = Number(row[idx.qtde])||0;
+        const vtabela = Number(row[idx.vtabela])||0;
+        const vvenda = Number(row[idx.vvenda])||0;
+        newRecs.push({
+          unidade: row[idx.unidade],
+          linha: row[idx.linha],
+          produto: row[idx.produto],
+          qtde,
+          data: idx.data>-1 ? excelDateToISO(row[idx.data]) : todayISO(),
+          vtabela,
+          vvenda,
+          vsubtot: idx.vsubtot>-1 ? (Number(row[idx.vsubtot])||qtde*vvenda) : qtde*vvenda,
+          diftabela: idx.diftabela>-1 ? (Number(row[idx.diftabela])||0) : (qtde*vtabela - qtde*vvenda),
+          pedido: idx.pedido>-1 ? row[idx.pedido] : null,
+          testes: idx.testes>-1 ? (Number(row[idx.testes])||0) : 0,
+          totaltabela: idx.totaltabela>-1 ? (Number(row[idx.totaltabela])||qtde*vtabela) : qtde*vtabela,
+          nf: idx.nf>-1 ? row[idx.nf] : '',
+          _status: 'IMPORTADO'
+        });
+        imported++;
+      }
+      if(imported===0){ toast('Nenhum registro válido encontrado no arquivo.', true); return; }
+      if(confirm(`Encontrados ${imported} registros na aba "${sheetName}". Deseja SUBSTITUIR os dados atuais? (Cancelar = adicionar aos existentes)`)){
+        DATA = newRecs;
+      } else {
+        DATA = DATA.concat(newRecs);
+      }
+
+      // Linhas item-a-item da aba "LOCAÇOES BLESSING" (coluna F/LOC.UNIT e coluna J/TOTAL TABELA)
+      // e o mapa de contadores por unidade — usados para recalcular os cards de Locações
+      // dinamicamente conforme o filtro aplicado no dashboard, em vez de um total fixo.
+      const locExtract = extractLocacoesBlessingRows(wb);
+      const novasLocRows = locExtract.rows;
+      const novosContadores = extractContadoresPorUnidade(wb);
+      let resumoAtualizado = false;
+      if(novasLocRows.length || Object.keys(novosContadores).length){
+        LOC_ROWS = novasLocRows;
+        CONTADORES_MAP = novosContadores;
+        if(locExtract.clientName){ CLIENT_NAME = locExtract.clientName; saveClientName(); }
+        RESUMO_LOC = {
+          contadores: Object.values(CONTADORES_MAP).reduce((s,v)=>s+(Number(v)||0),0),
+          locacoesFixas: LOC_ROWS.filter(r=>r.tipoLoc==='FIXA').reduce((s,r)=>s+r.locUnit,0),
+          descontoTabela: LOC_ROWS.filter(r=>r.tipoLoc==='TESTE').reduce((s,r)=>s+r.totalTabela,0),
+          hasData: true
+        };
+        saveLocDetalhe();
+        saveResumo();
+        resumoAtualizado = true;
+      }
+
+      saveData();
+      renderTable();
+      toast(`${imported} registros importados com sucesso.${resumoAtualizado ? ' Resumo de Locações atualizado.' : ''}`);
+    }catch(err){
+      console.error(err);
+      toast('Erro ao ler o arquivo: ' + err.message, true);
+    }
+  };
+  reader.readAsBinaryString(file);
+}
+
+function exportFile(){
+  const rows = getFiltered();
+  if(rows.length === 0 && DELETED_LOG.length === 0){
+    toast('Nada para exportar — importe ou cadastre registros primeiro.', true);
+    return;
+  }
+  const mapRow = (r) => ({
+    'STATUS': r._status || 'IMPORTADO',
+    'UNIDADE': r.unidade, 'LINHA': r.linha, 'PRODUTO': r.produto, 'QTDE': r.qtde,
+    'DATA': r.data, 'V. TABELA': r.vtabela, 'V.VENDA': r.vvenda, 'V.SUBTOT.VENDA': r.vsubtot,
+    'DIF TABELA': r.diftabela, 'PEDIDO_INT': r.pedido, 'TESTES': r.testes,
+    'TOTAL_TABELA': r.totaltabela, 'NF': r.nf
+  });
+  const exportRows = rows.map(mapRow);
+  const excludedRows = DELETED_LOG.map(mapRow);
+  const allRows = exportRows.concat(excludedRows);
+
+  try{
+    const ws = XLSX.utils.json_to_sheet(allRows);
+    ws['!cols'] = [{wch:11},{wch:26},{wch:16},{wch:28},{wch:6},{wch:11},{wch:11},{wch:11},{wch:13},{wch:12},{wch:10},{wch:9},{wch:13},{wch:10}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'BASE_EXPORT');
+    const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+    const blob = new Blob([wbout], {type:'application/octet-stream'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `LM_BLESSING_export_${todayISO()}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=> URL.revokeObjectURL(url), 3000);
+    toast(`${allRows.length} registros exportados` + (excludedRows.length ? ` (inclui ${excludedRows.length} excluído(s) marcado(s) para auditoria).` : '.'));
+  }catch(err){
+    console.error(err);
+    toast('Erro ao exportar: ' + err.message, true);
+  }
+}
+
+/* ============================ RELATÓRIO DE IMPRESSÃO ============================ */
+/* Imprime o relatório atualmente selecionado no seletor de relatórios (Analítico,
+   Faturamento por Linha ou Locações Fixas e Variáveis), reaproveitando os cards,
+   gráficos e tabelas já renderizados no painel de relatório em tela. */
+function buildPrintReport(){
+  const type = $('#reportSelect').value;
+  if(!type){
+    toast('Selecione um relatório no menu acima antes de imprimir.', true);
+    return;
+  }
+  const rows = getFiltered();
+  const tabelaTotal = rows.reduce((s,r)=>s+(Number(r.totaltabela)||0),0);
+  renderReportPanel(rows, tabelaTotal); // garante que o painel reflita os filtros/seleção atuais
+
+  const filtroDesc = [];
+  if($('#fUnidade').value) filtroDesc.push('Unidade: ' + $('#fUnidade').value);
+  if($('#fLinha').value) filtroDesc.push('Linha: ' + $('#fLinha').value);
+  if($('#fProduto').value) filtroDesc.push('Produto contém: "' + $('#fProduto').value + '"');
+  if($('#fDataIni').value) filtroDesc.push('De: ' + fmtDate($('#fDataIni').value));
+  if($('#fDataFim').value) filtroDesc.push('Até: ' + fmtDate($('#fDataFim').value));
+  if($('#fPedido').value) filtroDesc.push('Pedido: ' + $('#fPedido').value);
+  if($('#fNF').value) filtroDesc.push('NF contém: ' + $('#fNF').value);
+
+  const titulo = $('#reportPanelTitle').textContent;
+
+  // Todos os relatórios (Analítico, Faturamento por Linha e Locações Fixas e
+  // Variáveis) são impressos em orientação paisagem, para permitir melhor
+  // distribuição das colunas e informações na página impressa.
+  $('#printOrientationStyle').textContent = '@page { size: landscape; }';
+
+  $('#printArea').innerHTML = `
+    <div class="pr-header">
+      <div>
+        <p class="pr-title">GRUPO LABMEDIC — ${CLIENT_NAME}</p>
+        <p class="pr-sub">${titulo} ${filtroDesc.length ? '· ' + filtroDesc.join(' · ') : '(todos os registros)'}</p>
+      </div>
+      <div class="pr-meta">Gerado em ${new Date().toLocaleString('pt-BR')}<br>${rows.length} registro(s) no filtro</div>
+    </div>
+    <div class="cards" style="grid-template-columns:repeat(5,1fr);margin:0 0 16px;">${$('#reportCards').innerHTML}</div>
+    ${$('#reportCharts').innerHTML}
+    ${$('#reportBody').innerHTML}
+    <div class="pr-foot">Grupo Labmedic · Relatório gerado automaticamente pelo formulário de Gestão de Pedidos ${CLIENT_NAME}</div>
+  `;
+  window.print();
+}
+
+/* ============================ EVENTOS ============================ */
+$('#btnNew').addEventListener('click', openNew);
+$('#btnCloseModal').addEventListener('click', closeModal);
+$('#btnCancelModal').addEventListener('click', closeModal);
+$('#btnSaveModal').addEventListener('click', saveModal);
+$('#modalBackdrop').addEventListener('click', (e)=>{ if(e.target.id==='modalBackdrop') closeModal(); });
+
+$('#mLinha').addEventListener('change', ()=>{ fillProdutoDatalist($('#mLinha').value); $('#mProduto').value=''; applyProdutoCatalog(); });
+$('#mProduto').addEventListener('input', applyProdutoCatalog);
+$('#mProduto').addEventListener('change', applyProdutoCatalog);
+$('#mQtde').addEventListener('input', recalcModal);
+$('#mVTabela').addEventListener('input', recalcModal);
+$('#mVVenda').addEventListener('input', recalcModal);
+
+// filtragem automática: dropdowns disparam no "change", campos livres no "input"
+['#fUnidade','#fLinha'].forEach(sel=> $(sel).addEventListener('change', renderTable));
+['#fProduto','#fDataIni','#fDataFim','#fPedido','#fNF'].forEach(sel=> $(sel).addEventListener('input', renderTable));
+
+$('#btnClearFilters').addEventListener('click', ()=>{
+  ['#fUnidade','#fLinha','#fProduto','#fDataIni','#fDataFim','#fPedido','#fNF'].forEach(sel=> $(sel).value='');
+  renderTable();
+});
+
+$('#btnPrintReportTop').addEventListener('click', buildPrintReport);
+$('#reportSelect').addEventListener('change', renderTable);
+
+let tableExpanded = false;
+$('#btnToggleTable').addEventListener('click', ()=>{
+  tableExpanded = !tableExpanded;
+  $('#tableScroll').classList.toggle('collapsed', !tableExpanded);
+  $('#tableFootbar').classList.toggle('collapsed', !tableExpanded);
+  $('#btnToggleTable').textContent = tableExpanded ? '▴ Recolher registros' : '▾ Expandir registros';
+});
+
+$('#btnImport').addEventListener('click', ()=> $('#fileImport').click());
+$('#fileImport').addEventListener('change', (e)=>{
+  if(e.target.files[0]) importFile(e.target.files[0]);
+  e.target.value = '';
+});
+$('#btnExport').addEventListener('click', exportFile);
+
+$('#btnClearAll').addEventListener('click', async ()=>{
+  if(!confirm('Isso vai apagar TODOS os registros e o resumo de locações salvos no navegador. Deseja continuar?')) return;
+  DATA = [];
+  RESUMO_LOC = { contadores:0, locacoesFixas:0, descontoTabela:0, hasData:false };
+  LOC_ROWS = [];
+  CONTADORES_MAP = {};
+  await saveData();
+  await saveResumo();
+  await saveLocDetalhe();
+  renderTable();
+  toast('Todos os registros foram removidos.');
+});
+
+/* ============================ START ============================ */
+(async function init(){
+  fillStaticSelects();
+  await loadData();
+  await loadDeletedLog();
+  await loadResumo();
+  await loadLocDetalhe();
+  await loadClientName();
+  renderTable();
+})();
+</script>
+</body>
+</html>
