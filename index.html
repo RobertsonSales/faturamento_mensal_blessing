@@ -361,6 +361,28 @@
   .toast.show{opacity:1; transform:translateY(0);}
   .toast.err{background:var(--coral-500);}
   .badge-count{font-family:var(--font-mono); font-size:10px; background:rgba(255,255,255,.15); padding:1px 7px; border-radius:100px;}
+
+  /* ===== Overlay de progresso da importação (centralizado na página) ===== */
+  .progress-overlay{
+    position:fixed; inset:0; background:rgba(11,31,42,.55); display:none;
+    align-items:center; justify-content:center; z-index:200;
+  }
+  .progress-overlay.open{display:flex;}
+  .progress-card{
+    background:var(--card); border-radius:var(--radius); padding:28px 32px; min-width:280px; max-width:90vw;
+    box-shadow:0 20px 48px rgba(0,0,0,.28); display:flex; flex-direction:column; align-items:center; gap:14px;
+    border:1px solid var(--line);
+  }
+  .progress-spinner{
+    width:40px; height:40px; border-radius:50%;
+    border:4px solid var(--line); border-top-color:var(--teal-500);
+    animation:progress-spin .8s linear infinite;
+  }
+  @keyframes progress-spin{ to{ transform:rotate(360deg); } }
+  .progress-text{font-size:13.5px; color:var(--ink-900); font-weight:600; text-align:center;}
+  .progress-bar-track{width:220px; height:6px; border-radius:100px; background:var(--line); overflow:hidden;}
+  .progress-bar-fill{height:100%; background:var(--teal-500); width:0%; border-radius:100px; transition:width .25s ease;}
+  .progress-pct{font-family:var(--font-mono); font-size:11.5px; color:var(--ink-600);}
 </style>
 <!-- Preenchido dinamicamente pelo JS (buildPrintReport) para colocar todos os
      relatórios em paisagem na impressão, permitindo melhor distribuição das
@@ -395,6 +417,7 @@
       <button class="btn btn-ghost btn-sm" id="btnImport">⇪ Importar Excel</button>
       <input type="file" id="fileImport" accept=".xlsx,.xls,.xlsm,.csv" style="display:none">
       <button class="btn btn-ghost btn-sm" id="btnExport" title="Exporta os registros filtrados com coluna STATUS (IMPORTADO/NOVO/EDITADO) e inclui os excluídos para auditoria. Os dados ficam salvos apenas neste navegador.">⇩ Exportar Excel</button>
+      <button class="btn btn-ghost btn-sm" id="btnExportAnalitico" title="Exporta uma planilha separada 'Analítico Blessing', com abas BASE, LOCAÇÕES BLESSING, RESUMO POR UNIDADE e RESUMO LOCAÇÕES, em formato profissional com autofiltro.">⇩ Exportar Analítico Blessing</button>
     </div>
   </div>
 </div>
@@ -619,9 +642,24 @@
 <!-- ÁREA DE IMPRESSÃO -->
 <div id="printArea"></div>
 
+<!-- Overlay de progresso, exibido durante a leitura/processamento da planilha importada -->
+<div class="progress-overlay no-print" id="progressOverlay">
+  <div class="progress-card">
+    <div class="progress-spinner"></div>
+    <div class="progress-text" id="progressText">Lendo arquivo...</div>
+    <div class="progress-bar-track"><div class="progress-bar-fill" id="progressBarFill"></div></div>
+    <div class="progress-pct" id="progressPct">0%</div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- ExcelJS: usado apenas na exportação da planilha "Analítico Blessing", para poder
+     transcrever a aba RESUMO LOCAÇÕES com o mesmo formato/estilo (o SheetJS acima não
+     preserva estilos ao escrever um novo arquivo) e para aplicar formatação profissional
+     com autofiltro nas demais abas dessa exportação. Não interfere em nada do que já existia. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script>
 /* ============================ DADOS BASE (extraídos da planilha original) ============================ */
 const CATALOG = {"BIOQUÍMICA": {"AUTOCAL H 1X5ML": {"vt": 0, "vc": 0, "vv": 81.11, "testes": 0}, "BIOTEC_BILIRRUBINA DIRETA 104 ML": {"vt": 116.52, "vc": 62.52, "vv": 75.02, "testes": 0}, "BIOTEC_BILIRRUBINA TOTAL 104 ML": {"vt": 116.52, "vc": 62.52, "vv": 75.02, "testes": 0}, "BIOTEC_LIQUIDO DE SISTEMA 1X250": {"vt": 118.8, "vc": 62.54, "vv": 75.05, "testes": 0.0}, "BIOTEC_QUANTIALT 1 X 5ML": {"vt": 107.89, "vc": 69.75, "vv": 83.7, "testes": 0}, "BIOTEC_QUANTINORM 1 X 5ML": {"vt": 107.89, "vc": 64.88, "vv": 77.86, "testes": 0}, "LABTEST_QUALITROL CK": {"vt": 271.0, "vc": 167.65, "vv": 171.0, "testes": 0}, "PCR TURBIDIMETRICO 50 ML": {"vt": 286.0, "vc": 115.0, "vv": 138.0, "testes": 0}, "SOLUÇÃO DESPROTEINOZANTE 1L": {"vt": 86.4, "vc": 35.0, "vv": 42.0, "testes": 0.0}, "SOLUÇÃO DESPROTEINOZANTE 2L": {"vt": 172.8, "vc": 70.0, "vv": 84.0, "testes": 0.0}, "VIDA_ACID WASH SOLUTION ": {"vt": 532.98, "vc": 329.0, "vv": 394.8, "testes": 0.0}, "VIDA_ACIDO URICO 200 ML": {"vt": 77.76, "vc": 37.0, "vv": 44.4, "testes": 800.0}, "VIDA_ALBUMINA 200 ML": {"vt": 62.64, "vc": 21.0, "vv": 25.2, "testes": 800.0}, "VIDA_ALKALINE WASH SOLUTION": {"vt": 532.98, "vc": 329.0, "vv": 394.8, "testes": 0.0}, "VIDA_AMILASE 60 ML": {"vt": 280.8, "vc": 115.0, "vv": 138.0, "testes": 240.0}, "VIDA_BILIRRUBINA DIRETA 105ML": {"vt": 118.8, "vc": 37.0, "vv": 44.4, "testes": 420.0}, "VIDA_BILIRRUBINA TOTAL 105ML": {"vt": 118.8, "vc": 42.0, "vv": 50.4, "testes": 420.0}, "VIDA_CALCIO 100ML": {"vt": 68.04, "vc": 35.0, "vv": 42.0, "testes": 400.0}, "VIDA_CK TOTAL 100 ML": {"vt": 307.8, "vc": 110.0, "vv": 132.0, "testes": 400.0}, "VIDA_CKMB 100ML": {"vt": 626.4, "vc": 260.0, "vv": 312.0, "testes": 400.0}, "VIDA_CLORETO 200ML": {"vt": 268.92, "vc": 48.0, "vv": 57.6, "testes": 800.0}, "VIDA_COLESTEROL TOTAL 200ML": {"vt": 84.24, "vc": 33.0, "vv": 39.6, "testes": 800.0}, "VIDA_CONTROLE N1/N2 ASO/FR/PCR": {"vt": 213.84, "vc": 129.0, "vv": 154.8, "testes": 0.0}, "VIDA_CREATININA 250ML": {"vt": 52.92, "vc": 29.0, "vv": 34.8, "testes": 1000.0}, "VIDA_DEFOAMER - 1000/003- 5000": {"vt": 1706.4, "vc": 790.0, "vv": 948.0, "testes": 0.0}, "VIDA_FERRITINA": {"vt": 453.6, "vc": 259.0, "vv": 310.8, "testes": 0.0}, "VIDA_FERRO 50ML": {"vt": 91.8, "vc": 42.0, "vv": 50.4, "testes": 200.0}, "VIDA_FOSFATASE ALCALINA 100ML": {"vt": 85.32, "vc": 39.0, "vv": 46.8, "testes": 400.0}, "VIDA_FOSFORO 200ML": {"vt": 129.6, "vc": 35.0, "vv": 42.0, "testes": 800.0}, "VIDA_GAMA GT 100ML": {"vt": 106.92, "vc": 44.0, "vv": 52.8, "testes": 400.0}, "VIDA_GLICOSE 1000ML": {"vt": 110.16, "vc": 54.0, "vv": 64.8, "testes": 4000.0}, "VIDA_HDL DIRETO 240ML": {"vt": 1242.0, "vc": 339.0, "vv": 406.8, "testes": 960.0}, "VIDA_LACTATO 100ML": {"vt": 334.8, "vc": 179.0, "vv": 214.8, "testes": 400.0}, "VIDA_LDH 100ML": {"vt": 102.6, "vc": 39.0, "vv": 46.8, "testes": 400.0}, "VIDA_LIPASE DIRETA 50 ML": {"vt": 490.0, "vc": 195.2, "vv": 234.24, "testes": 200.0}, "VIDA_MAGNESIO 100ML": {"vt": 74.52, "vc": 23.0, "vv": 27.6, "testes": 400.0}, "VIDA_PCR 100ML": {"vt": 572.4, "vc": 230.0, "vv": 276.0, "testes": 400.0}, "VIDA_PROTEINA TOTAL 250ML": {"vt": 52.92, "vc": 26.0, "vv": 31.2, "testes": 1000.0}, "VIDA_PROTEINA URINARIA + CONTROLE 100ML": {"vt": 76.68, "vc": 33.0, "vv": 39.6, "testes": 400.0}, "VIDA_TGO/AST 100ML": {"vt": 75.6, "vc": 37.0, "vv": 44.4, "testes": 400.0}, "VIDA_TGP/ALT 100ML": {"vt": 75.6, "vc": 37.0, "vv": 44.4, "testes": 400.0}, "VIDA_TRIGLICERIDES 500ML": {"vt": 399.6, "vc": 189.0, "vv": 226.8, "testes": 2000.0}, "VIDA_UREIA UV 200ML": {"vt": 105.84, "vc": 56.0, "vv": 67.2, "testes": 800.0}, "VIDA_VIDA CON N": {"vt": 84.24, "vc": 34.9, "vv": 41.88, "testes": 0.0}, "VIDA_VIDA CON P": {"vt": 84.24, "vc": 34.9, "vv": 41.88, "testes": 0.0}, "VIDA_VIDACAL NIVEL 1": {"vt": 126.36, "vc": 65.0, "vv": 78.0, "testes": 0.0}, "VYTTRA_ACIDO URICO (BM SERIES I) 200 M": {"vt": 72.0, "vc": 50.0, "vv": 60.0, "testes": 800.0}, "VYTTRA_ALBUMINA (BM SERIES I) 200 M": {"vt": 58.0, "vc": 21.0, "vv": 25.2, "testes": 800.0}, "VYTTRA_ALT / TGP (BM SERIES I) 100 ML ": {"vt": 70.0, "vc": 37.0, "vv": 44.4, "testes": 400.0}, "VYTTRA_AMILASE (BM SERIES I) 80 ML": {"vt": 335.0, "vc": 173.33, "vv": 208.0, "testes": 320.0}, "VYTTRA_AST / TGO (BM SERIES I) 100 ML": {"vt": 70.0, "vc": 37.0, "vv": 44.4, "testes": 400.0}, "VYTTRA_BILIRRUBINA DIRETA (BM SERIES I) 100 ML": {"vt": 104.76, "vc": 50.0, "vv": 60.0, "testes": 400.0}, "VYTTRA_BILIRRUBINA TOTAL (BM SERIES I) 100 ML": {"vt": 104.76, "vc": 50.0, "vv": 60.0, "testes": 400.0}, "VYTTRA_CALCIO (BM SERIES) 80 ML": {"vt": 50.5, "vc": 28.0, "vv": 33.6, "testes": 320.0}, "VYTTRA_CALCIO (UNIVERSAL) 100 ML": {"vt": 50.5, "vc": 35.0, "vv": 42.0, "testes": 400.0}, "VYTTRA_CKMB (BM SERIES I) 96 ML": {"vt": 556.8, "vc": 259.2, "vv": 311.04, "testes": 384.0}, "VYTTRA_CK-NAC 100ML": {"vt": 280.0, "vc": 120.0, "vv": 144.0, "testes": 400.0}, "VYTTRA_CLORETO 80ML": {"vt": 99.6, "vc": 80.0, "vv": 96.0, "testes": 320.0}, "VYTTRA_COLESTEROL TOTAL 500ML": {"vt": 170.0, "vc": 89.0, "vv": 106.8, "testes": 2000.0}, "VYTTRA_CREATININA (UNIVERSAL) 500 ML ": {"vt": 95.0, "vc": 66.0, "vv": 79.2, "testes": 2000.0}, "VYTTRA_FERRO 100ML": {"vt": 78.54, "vc": 37.12, "vv": 44.54, "testes": 400.0}, "VYTTRA_FOSFATASE ALCALINA (BM SERIES I) 100 ML": {"vt": 79.0, "vc": 37.0, "vv": 44.4, "testes": 400.0}, "VYTTRA_FOSFORO (BM SERIES I) 80 ML": {"vt": 79.2, "vc": 14.0, "vv": 16.8, "testes": 320.0}, "VYTTRA_GGT (BM SERIES I) 100 ML ": {"vt": 99.0, "vc": 37.0, "vv": 44.4, "testes": 400.0}, "VYTTRA_GLICOSE (UNIVERSAL) 500 ML": {"vt": 65.0, "vc": 27.0, "vv": 32.4, "testes": 2000.0}, "VYTTRA_HDL DIRETO 80ML": {"vt": 383.33, "vc": 104.0, "vv": 124.8, "testes": 320.0}, "VYTTRA_HEMAREF II - 1L": {"vt": 139.72, "vc": 69.86, "vv": 83.83, "testes": 0}, "VYTTRA_LDH (BM SERIES I) 100 ML": {"vt": 95.0, "vc": 39.0, "vv": 46.8, "testes": 400.0}, "VYTTRA_LIPASE (BM SERIES I) 50 ML": {"vt": 490.0, "vc": 195.2, "vv": 234.24, "testes": 200.0}, "VYTTRA_MAGNESIO (BM SERIES I) 80 ML": {"vt": 55.2, "vc": 18.4, "vv": 22.08, "testes": 320.0}, "VYTTRA_PCR (BM SERIES I) 96 ML": {"vt": 508.8, "vc": 220.8, "vv": 264.96, "testes": 384.0}, "VYTTRA_PROTEINA TOTAL (BM SERIES I) 200 ML ": {"vt": 42.0, "vc": 26.0, "vv": 31.2, "testes": 800.0}, "VYTTRA_PROTEINA URINARIA + CONTROLE 100ML ": {"vt": 61.38, "vc": 22.52, "vv": 27.02, "testes": 400.0}, "VYTTRA_SORO CONTR. ANORMAL DIACON 5ML": {"vt": 238.4, "vc": 149.9, "vv": 179.88, "testes": 0}, "VYTTRA_SORO CONTR. NORMAL DIACON 5ML": {"vt": 238.4, "vc": 149.9, "vv": 179.88, "testes": 0}, "VYTTRA_TRIGLICERIDES 500ML": {"vt": 370.0, "vc": 189.0, "vv": 226.8, "testes": 2000.0}, "VYTTRA_UREIA (UNIVERSAL) 500 ML": {"vt": 245.0, "vc": 95.0, "vv": 114.0, "testes": 2000.0}, "VYTTRA_VYTCAL CALIBRADOR PCR 1 ML": {"vt": 287.37, "vc": 177.37, "vv": 212.84, "testes": 0.0}, "VYTTRA_VYTCAL MULTICALIB. UNIVER. BIOQ. CLIN. - 3 ML": {"vt": 117.0, "vc": 45.0, "vv": 54.0, "testes": 0.0}, "VYTTRA_VYTCON BIOQUIMICA NIVEL I -5 ML": {"vt": 78.0, "vc": 45.6, "vv": 54.72, "testes": 0.0}, "VYTTRA_VYTCON BIOQUIMICA NIVEL II - 5 ML": {"vt": 78.0, "vc": 45.6, "vv": 54.72, "testes": 0.0}}, "HEMATOLOGIA": {"BOBINA TÉRMICA": {"vt": 0.0, "vc": 0.0, "vv": 0.0, "testes": 0}, "DIAGNO_D-CHECK  5 Diff": {"vt": 0, "vc": 0, "vv": 711.53, "testes": 0}, "DIAGNO_D-CHECK D 3X 2,5ML": {"vt": 559.0, "vc": 287.6, "vv": 345.12, "testes": 0.0}, "DIAGNO_DIACLEANER 1L": {"vt": 233.0, "vc": 34.05, "vv": 40.86, "testes": 0}, "DIAGNO_DIALYSE-3CF 1L": {"vt": 374.0, "vc": 85.95, "vv": 103.14, "testes": 0.0}, "DIAGNO_DIASTROM-3DH 0,5L": {"vt": 321.0, "vc": 66.6, "vv": 79.92, "testes": 0.0}, "DIAGNO_DIATERG 5L": {"vt": 233.0, "vc": 31.14, "vv": 37.37, "testes": 0.0}, "DIAGNO_DIATON-3 20L": {"vt": 420.0, "vc": 51.17, "vv": 61.4, "testes": 500.0}, "DIAGNO_DIATON-CP 20": {"vt": 288.0, "vc": 80.85, "vv": 97.02, "testes": 500.0}, "JH_DIACLEANZ CONCENTRADO": {"vt": 426.0, "vc": 84.0, "vv": 100.8, "testes": 0.0}, "JH_DIAG 51R 20L": {"vt": 224.0, "vc": 77.0, "vv": 92.4, "testes": 0}, "JH_DIALYSE 3CF 31102 500ML": {"vt": 239.0, "vc": 93.0, "vv": 111.6, "testes": 0.0}, "JH_LISE DIAG DIFF 51R 500ML": {"vt": 537.0, "vc": 280.5, "vv": 336.6, "testes": 0}, "JH_LISE DIAG H 51R 500ML": {"vt": 537.0, "vc": 258.8, "vv": 310.56, "testes": 0}, "JH_MHLAB CLEAN 20L": {"vt": 164.0, "vc": 192.5, "vv": 231.0, "testes": 0}, "JH_MHLAB DILU 20L": {"vt": 321.0, "vc": 125.0, "vv": 150.0, "testes": 800.0}, "JH_MHLAB SHEATH 20L LT": {"vt": 631.0, "vc": 324.0, "vv": 388.8, "testes": 0.0}, "VALOR DOS CONTADORES": {"vt": 1.4, "vc": 0, "vv": 0.0, "testes": 0}, "VIDA_CONTROLE VIDACON H6": {"vt": 1023.0, "vc": 779.0, "vv": 934.8, "testes": 0}, "VYTTRA_AUTO DESPRO 500ML": {"vt": 185.0, "vc": 21.31, "vv": 25.57, "testes": 0.0}, "VYTTRA_HEMOCLEAN HEMACOUNTER 1L": {"vt": 170.0, "vc": 45.7, "vv": 54.84, "testes": 0.0}, "VYTTRA_HEMOLISE DIFF HEMACOUNTER": {"vt": 537.0, "vc": 240.32, "vv": 288.38, "testes": 0.0}, "VYTTRA_HEMOLISE H PLUS": {"vt": 537.0, "vc": 240.32, "vv": 288.38, "testes": 0.0}, "VYTTRA_HEMOTON HEMACOUNTER - 20L": {"vt": 224.0, "vc": 65.22, "vv": 78.26, "testes": 500.0}, "VYTTRA_VYTCON H - 3 X 3ML": {"vt": 1023.0, "vc": 445.0, "vv": 534.0, "testes": 0.0}, "VYTTRA_VYTCON H - 6 X 3ML": {"vt": 1023.0, "vc": 852.15, "vv": 1022.58, "testes": 0.0}, "VIDA_HIPER CLEAN 100 ML": {"vt": 185.0, "vc": 40.0, "vv": 48.0, "testes": 0}, "VIDA_VIDATON VC - 20L": {"vt": 224.0, "vc": 65.22, "vv": 78.26, "testes": 0}, "VIDA_VIDACLEAN VC 1L": {"vt": 170.0, "vc": 45.7, "vv": 54.84, "testes": 0}, "VIDA_VIDALISE H VC": {"vt": 537.0, "vc": 240.32, "vv": 288.38, "testes": 0}, "VIDA_VIDALISE D VC": {"vt": 537.0, "vc": 240.32, "vv": 288.38, "testes": 0}}, "COAGULAÇÃO": {"BIOCONTROL N  3 X 1 ML": {"vt": 289.5, "vc": 105.05, "vv": 126.06, "testes": 0}, "BIOCONTROL P  3 X 1 ML": {"vt": 289.5, "vc": 105.05, "vv": 126.06, "testes": 0}, "BIOTEC_PLASMAS CONTROLE DE COAGULACAO 2 X 1ML": {"vt": 193.0, "vc": 94.9, "vv": 113.88, "testes": 0.0}, "BIOTEC_PROTROMBINA (TP) 10 X 6 ML": {"vt": 402.0, "vc": 244.04, "vv": 292.85, "testes": 600.0}, "BIOTEC_TROMBOPLASTINA PARC. ATIVADA (TTPA) 1 X 36ML": {"vt": 193.0, "vc": 99.54, "vv": 119.45, "testes": 320.0}, "BOBINA ": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "CLOT_PROTROMBINA (TP) 10 X 5 ML": {"vt": 193.0, "vc": 94.9, "vv": 113.88, "testes": 500.0}, "CLOT_TROMBOPLASTINA PARC. ATIVADA (TTPA) 1 X 30ML": {"vt": 193.0, "vc": 94.9, "vv": 113.88, "testes": 300.0}, "CUBETA DE AMOSTRA EQUIP. 2800/3800/PCT500": {"vt": 360.0, "vc": 360.0, "vv": 360.0, "testes": 0}, "CUBETA MAX COAG (1000)": {"vt": 1079.0, "vc": 660.0, "vv": 792.0, "testes": 0}, "CUBETA SISMEX / VCA (2000 UNID)": {"vt": 0.0, "vc": 0.0, "vv": 0.0, "testes": 0}, "TP BIOCLIN 10 X 2 ML": {"vt": 134.0, "vc": 68.44, "vv": 82.13, "testes": 0}, "TP BIOCLIN 10 X 5 ML": {"vt": 335.0, "vc": 171.1, "vv": 205.32, "testes": 0}, "TTPA BIOCLIN 6 X 2,5 ML": {"vt": 181.0, "vc": 68.44, "vv": 82.13, "testes": 0}, "VIDA_ PLASMAS CONTROLE DE COAGULACAO": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "VIDA_FIBRINOGÊNIO": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "VIDA_PROTROMBINA (TP) 10 X 5 ML": {"vt": 0.0, "vc": 180.0, "vv": 216.0, "testes": 0}, "VIDA_TROMBOPLASTINA PARC. ATIVADA (TTPA) 1 X 30ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0.0}}, "GASOMETRIA": {"PRIME_CALIBRADOR 300": {"vt": 3888.0, "vc": 803.4, "vv": 964.08, "testes": 360.0}, "PRIME_CALIBRADOR 400": {"vt": 3888.0, "vc": 824.0, "vv": 988.8, "testes": 470.0}, "PRIME_CALIBRADOR 500": {"vt": 4860.0, "vc": 844.6, "vv": 1013.52, "testes": 580.0}, "PRIME_CONTROLE AUTOMÁTICO": {"vt": 831.6, "vc": 618.0, "vv": 741.6, "testes": 0.0}, "PRIME_CONTROLE DE AMPOLA": {"vt": 0, "vc": 0, "vv": 0.0, "testes": 0.0}, "PRIME_CARTÃO SENSOR": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "PRIME_CATA COAGULOS": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "PRIME_PLUS CALIBRADOR 400": {"vt": 0, "vc": 0, "vv": 0.0, "testes": 0}, "PRIME_PLUS CARTÃO SENSOR": {"vt": 0, "vc": 0, "vv": 0.0, "testes": 0}, "PRIME_PLUS CONTROLE AUTOMÁTICO": {"vt": 0, "vc": 0, "vv": 0.0, "testes": 0}, "PRIME_PLUS CONTROLE DE AMPOLA": {"vt": 0, "vc": 0, "vv": 0.0, "testes": 0}, "MEDMAX_PACK MAXION": {"vt": 840.0, "vc": 0, "vv": 480.0, "testes": 0}, "KDV_PACK MAXION": {"vt": 840.0, "vc": 0, "vv": 480.0, "testes": 0}, "SOLUÇÃO COND. MAXION 30ML ": {"vt": 0.0, "vc": 0, "vv": 0, "testes": 0}, "SOLUÇÃO LIMPEZA MAXION 100ML": {"vt": 0.0, "vc": 0, "vv": 0, "testes": 0}, "VIDA_PACK DOUBLE PACK": {"vt": 1610.0, "vc": 0, "vv": 1275.0, "testes": 0}, "VIDA_PACK ELECTROLYTE V": {"vt": 1270.0, "vc": 0, "vv": 600.0, "testes": 0}, "VIDA_PACK GASMETER": {"vt": 1500.0, "vc": 0, "vv": 1090.0, "testes": 0}, "VYTTRA_PACK AVL - ISE GRAM": {"vt": 320.0, "vc": 0, "vv": 150.0, "testes": 0}, "SOLUÇÃO COND. VIDA 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "SOLUÇÃO LIMPEZA VIDA 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "SOLUÇÃO COND. AVL LS 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "SOLUÇÃO LIMPEZA AVL LS 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "BOBINA 5.7 x 20M": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "SOL. LIMPEZA VIDA 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "CONTROLE MISSION 3 NÍVEIS": {"vt": 630.0, "vc": 0, "vv": 630.0, "testes": 0}, "SERINGA LL P/GASOMETRIA C/HEPARINA": {"vt": 1300.0, "vc": 0, "vv": 0, "testes": 0}, "ABL5_CAL 1 - 140ML": {"vt": 0.0, "vc": 0, "vv": 100.0, "testes": 0}, "ABL5_CAL 2 - 140ML": {"vt": 0.0, "vc": 0, "vv": 100.0, "testes": 0}, "ABL5_RINSE - 340ML": {"vt": 0.0, "vc": 0, "vv": 100.0, "testes": 0}, "SERINGA DE LIMPEZA PRIME": {"vt": 282.0, "vc": 0, "vv": 282.0, "testes": 0}}, "HEMOGLOBINA": {"VIDA_KIT REAGENTE H9": {"vt": 1023.75, "vc": 699.0, "vv": 838.8, "testes": 0.0}, "VIDA_COLUNA CROMATOGRAFIA LIQ. H9": {"vt": 4384.0, "vc": 3390.0, "vv": 4068.0, "testes": 3200.0}, "VIDA_CONTROLE HBA1C H9": {"vt": 250.0, "vc": 149.0, "vv": 178.8, "testes": 0.0}, "VIDA_CALIBRADOR HBA1C H900": {"vt": 250.0, "vc": 169.0, "vv": 202.8, "testes": 0.0}, "BOBINA": {"vt": 2.28, "vc": 1.9, "vv": 2.28, "testes": 0}}, "TESTE_RÁPIDO": {"CELER_TROPONINA I": {"vt": 572.0, "vc": 275.0, "vv": 330.0, "testes": 0.0}, "CELER_D-DIMERO": {"vt": 1004.0, "vc": 390.0, "vv": 468.0, "testes": 0.0}, "CELER_ BNP": {"vt": 1069.0, "vc": 633.96, "vv": 760.75, "testes": 0.0}, "CELER_PROCALCITONINA (PCT)": {"vt": 1069.0, "vc": 639.25, "vv": 767.1, "testes": 0.0}}, "URINA": {"VIDA_TESTE URINA URIVIDA (KIT 6000 TESTES)": {"vt": 14256.0, "vc": 4594.0, "vv": 5512.8, "testes": 0}, "VIDA_TIRA DE URINA URS-12F": {"vt": 0.0, "vc": 54.9, "vv": 65.88, "testes": 0}, "VIDA_SOLUÇÃO DE LIMPEZA URS200": {"vt": 0.0, "vc": 65.0, "vv": 78.0, "testes": 0}, "VIDA_SOLUÇÃO DE LAVAGEM CONCENTRADA URS300": {"vt": 0.0, "vc": 160.0, "vv": 192.0, "testes": 0}, "VIDA_SOLUÇÃO DE LIMPEZA CONCENTRADA URS400": {"vt": 0.0, "vc": 850.0, "vv": 1020.0, "testes": 0}, "VIDA_CONTROLE URS-500 SEDIMENTO": {"vt": 0.0, "vc": 590.0, "vv": 708.0, "testes": 0}, "VIDA_CONTROLE URS-406 POSITIVO TIRAS": {"vt": 0.0, "vc": 320.0, "vv": 384.0, "testes": 0}}, "ÍONS-SELETIVOS": {"BOBINA": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "CONTROLE MISSION 3 NÍVEIS": {"vt": 630.0, "vc": 0, "vv": 630.0, "testes": 0}, "KDV_PACK MAXION": {"vt": 840.0, "vc": 0, "vv": 480.0, "testes": 0}, "MEDMAX_PACK MAXION": {"vt": 840.0, "vc": 0, "vv": 480.0, "testes": 0}, "SOLUÇÃO COND. MAXION 30ML ": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "SOLUÇÃO LIMPEZA MAXION 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "VIDA_PACK DOUBLE PACK": {"vt": 1610.0, "vc": 0, "vv": 1050.0, "testes": 0}, "VIDA_PACK ELECTROLYTE V": {"vt": 1270.0, "vc": 0, "vv": 600.0, "testes": 0}, "VIDA_PACK GASMETER": {"vt": 1500.0, "vc": 0, "vv": 1090.0, "testes": 0}, "VYTTRA_PACK AVL - ISE GRAM": {"vt": 320.0, "vc": 0, "vv": 150.0, "testes": 0}, "SOLUÇÃO COND. VIDA 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "SOLUÇÃO LIMPEZA VIDA 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "SOLUÇÃO COND. AVL LS 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "SOLUÇÃO LIMPEZA AVL LS 100ML": {"vt": 0.0, "vc": 0, "vv": 0.0, "testes": 0}, "ELETRODO MEDIDOR DE REFERÊNCIA": {"vt": 1700.0, "vc": 0, "vv": 1700.0, "testes": 0}, "ELETRODO MEDIDOR DE CALCIO": {"vt": 1700.0, "vc": 0, "vv": 1700.0, "testes": 0}, "ELETRODO MEDIDOR DE CLORO": {"vt": 1700.0, "vc": 0, "vv": 1700.0, "testes": 0}, "ELETRODO MEDIDOR DE POTASSIO (K)": {"vt": 1700.0, "vc": 0, "vv": 1700.0, "testes": 0}, "ELETRODO MEDIDOR DE SÓDIO (NA)": {"vt": 1700.0, "vc": 0, "vv": 1700.0, "testes": 0}}, "BIOQUÍMICA-DC2": {"VIDA_ACIDO URICO 240 ML - DC2": {"vt": 88.0, "vc": 42.0, "vv": 50.4, "testes": 0}, "VIDA_ALBUMINA 240 ML - DC2": {"vt": 71.9, "vc": 25.0, "vv": 30.0, "testes": 0}, "VIDA_AMILASE 60 ML - DC2": {"vt": 253.0, "vc": 130.0, "vv": 156.0, "testes": 0}, "VIDA_BILIRRUBINA DIRETA 208ML DC2": {"vt": 220.0, "vc": 85.0, "vv": 102.0, "testes": 0}, "VIDA_BILIRRUBINA TOTAL 208 ML - DC2": {"vt": 220.0, "vc": 85.0, "vv": 102.0, "testes": 0}, "VIDA_CALCIO 120ML - DC2": {"vt": 79.15, "vc": 42.0, "vv": 50.4, "testes": 0}, "VIDA_CK TOTAL 75 ML - DC2": {"vt": 115.0, "vc": 115.0, "vv": 138.0, "testes": 0}, "VIDA_CKMB 75 ML - DC2": {"vt": 436.4, "vc": 220.0, "vv": 264.0, "testes": 0}, "VIDA_COLESTEROL TOTAL 240ML - DC2": {"vt": 91.1, "vc": 40.0, "vv": 48.0, "testes": 0}, "VIDA_CREATININA MONO 240ML - DC2": {"vt": 52.7, "vc": 32.0, "vv": 38.4, "testes": 0}, "VIDA_FERRO CROMAZUROL 120ML - DC2": {"vt": 137.8, "vc": 106.0, "vv": 127.2, "testes": 0}, "VIDA_FOSFATASE ALCALINA 75ML - DC2": {"vt": 67.0, "vc": 38.0, "vv": 45.6, "testes": 0}, "VIDA_FOSFORO UV 120 ML - DC2": {"vt": 81.5, "vc": 26.0, "vv": 31.2, "testes": 0}, "VIDA_GAMA GT 75 ML DC2": {"vt": 50.9, "vc": 25.0, "vv": 30.0, "testes": 0}, "VIDA_GLICOSE ENZIMATICA 300ML -DC2": {"vt": 47.9, "vc": 31.0, "vv": 37.2, "testes": 0}, "VIDA_HDL DIRETO 160 ML - DC2": {"vt": 771.0, "vc": 220.0, "vv": 264.0, "testes": 0}, "VIDA_LACTATO ENZIMATICO 120ML - DC2": {"vt": 448.7, "vc": 191.0, "vv": 229.2, "testes": 0}, "VIDA_LDH 75 ML - DC2": {"vt": 73.4, "vc": 30.0, "vv": 36.0, "testes": 0}, "VIDA_LIPASE DIRETA 75 ML - DC2": {"vt": 736.0, "vc": 279.0, "vv": 334.8, "testes": 0}, "VIDA_MAGNESIO 100ML - DC2": {"vt": 83.95, "vc": 30.0, "vv": 36.0, "testes": 0}, "VIDA_PCR 150ML - DC2": {"vt": 800.9, "vc": 375.0, "vv": 450.0, "testes": 0}, "VIDA_PROTEINAS TOTAIS 240ML - DC2": {"vt": 52.7, "vc": 29.0, "vv": 34.8, "testes": 0}, "VIDA_PROTEINA URINARIA + CONTROLE 100ML - DC2": {"vt": 85.9, "vc": 22.0, "vv": 26.4, "testes": 0}, "VIDA_TGO CINETICO 150ML - DC2": {"vt": 226.0, "vc": 60.0, "vv": 72.0, "testes": 0}, "VIDA_TGP CINETICO 100ML - DC2": {"vt": 226.0, "vc": 60.0, "vv": 72.0, "testes": 0}, "VIDA_TRIGLICERIDES 240ML - DC2": {"vt": 374.0, "vc": 99.0, "vv": 118.8, "testes": 0}, "VIDA_UREIA UV 450ML - DC2": {"vt": 232.0, "vc": 133.0, "vv": 159.6, "testes": 0}}};      // { linha: { produto: {vt,vc,vv,testes} } } — catálogo de referência (preços/testes)
@@ -635,6 +673,8 @@ let RESUMO_LOC = { contadores:0, locacoesFixas:0, descontoTabela:0, hasData:fals
 let LOC_ROWS = [];        // linhas da aba "LOCAÇÕES [CLIENTE]" (item a item) — usadas p/ recalcular os cards conforme o filtro
 let CONTADORES_MAP = {};  // { unidade: valorTestesACobrar } — quadro "CONTADORES HEMATOLOGIA" da aba "RESUMO LOCAÇÕES"
 let CLIENT_NAME = 'BLESSING'; // nome do cliente, extraído dinamicamente do nome da aba "LOCAÇÕES [CLIENTE]" na importação
+let RESUMO_UNIDADE_ROWS = [];   // linhas (Linha/Locação Fixa/Vendas/Locação Variável) da aba "RESUMO POR UNIDADE" — só usadas na exportação da planilha "Analítico Blessing"
+let RESUMO_LOC_SHEET_MODEL = null; // cópia fiel (valores + estilo) da aba "RESUMO LOCAÇÕES" — só usada na exportação da planilha "Analítico Blessing"
 let editingIndex = null; // null = novo
 let sortKey = 'data', sortDir = -1;
 
@@ -652,6 +692,35 @@ function toast(msg, isErr){
   t.className = 'toast show' + (isErr ? ' err' : '');
   clearTimeout(t._timer);
   t._timer = setTimeout(()=> t.classList.remove('show'), 2600);
+}
+
+/* ============================ OVERLAY DE PROGRESSO (IMPORTAÇÃO) ============================ */
+/* Objeto de progresso centralizado na página, vinculado à leitura/processamento da planilha
+   importada (importFile). Como o parsing acontece em memória (sem eventos de progresso
+   nativos do navegador), o avanço é por etapas conhecidas do processamento, não por bytes. */
+const IMPORT_PROGRESS_STEPS = [
+  'Lendo arquivo...',
+  'Interpretando planilha...',
+  'Processando registros da BASE...',
+  'Processando locações e resumos...',
+  'Finalizando importação...'
+];
+
+function showImportProgress(){
+  setImportProgressStep(0);
+  $('#progressOverlay').classList.add('open');
+}
+
+function setImportProgressStep(stepIdx){
+  const total = IMPORT_PROGRESS_STEPS.length;
+  const pct = Math.round(((stepIdx+1)/total)*100);
+  $('#progressText').textContent = IMPORT_PROGRESS_STEPS[stepIdx] || 'Processando...';
+  $('#progressBarFill').style.width = pct + '%';
+  $('#progressPct').textContent = pct + '%';
+}
+
+function hideImportProgress(){
+  $('#progressOverlay').classList.remove('open');
 }
 
 function nextPedido(){
@@ -756,6 +825,33 @@ async function loadClientName(){
 async function saveClientName(){
   try{ await window.storage.set('clientName', JSON.stringify(CLIENT_NAME), false); }
   catch(e){ console.error(e); }
+}
+
+/* Persistência dos dados extras usados só na exportação da planilha "Analítico Blessing"
+   (aba RESUMO POR UNIDADE e cópia fiel da aba RESUMO LOCAÇÕES). Não afeta o restante do
+   dashboard — se estiverem vazios, a exportação da Analítico Blessing simplesmente pula
+   essas abas e avisa o usuário. */
+async function loadAnaliticoExtras(){
+  try{
+    const res = await window.storage.get('resumoPorUnidadeRows', false);
+    if(res && res.value){ RESUMO_UNIDADE_ROWS = JSON.parse(res.value); return; }
+  }catch(e){ /* chave ainda não existe */ }
+  RESUMO_UNIDADE_ROWS = [];
+}
+
+async function saveAnaliticoExtras(){
+  try{ await window.storage.set('resumoPorUnidadeRows', JSON.stringify(RESUMO_UNIDADE_ROWS), false); }
+  catch(e){ console.error(e); }
+  try{ await window.storage.set('resumoLocacoesSheetModel', JSON.stringify(RESUMO_LOC_SHEET_MODEL), false); }
+  catch(e){ console.error(e); }
+}
+
+async function loadResumoLocSheetModel(){
+  try{
+    const res = await window.storage.get('resumoLocacoesSheetModel', false);
+    if(res && res.value){ RESUMO_LOC_SHEET_MODEL = JSON.parse(res.value); return; }
+  }catch(e){ /* chave ainda não existe */ }
+  RESUMO_LOC_SHEET_MODEL = null;
 }
 
 /* ============================ TEMA CLARO / ESCURO ============================ */
@@ -1417,7 +1513,23 @@ function renderResumoCards(valorTabela){
   }
 }
 
+/* Mostra os botões de exportação (Excel, Analítico Blessing e Imprimir relatório) só
+   depois que o usuário já importou alguma base — evita que ele tente exportar/imprimir
+   um dashboard ainda vazio. Chamada sempre que renderTable() roda, já que essa função é
+   disparada em todo ponto do app que altera DATA (importação, exclusão, edição, limpar tudo). */
+function updateExportButtonsVisibility(){
+  const temDados = DATA.length > 0;
+  const display = temDados ? '' : 'none';
+  const btnExportEl = $('#btnExport');
+  const btnExportAnaliticoEl = $('#btnExportAnalitico');
+  const btnPrintReportTopEl = $('#btnPrintReportTop');
+  if(btnExportEl) btnExportEl.style.display = display;
+  if(btnExportAnaliticoEl) btnExportAnaliticoEl.style.display = display;
+  if(btnPrintReportTopEl) btnPrintReportTopEl.style.display = display;
+}
+
 function renderTable(){
+  updateExportButtonsVisibility();
   const rows = getFiltered();
   rows.sort((a,b)=>{
     let va = a[sortKey], vb = b[sortKey];
@@ -1728,6 +1840,90 @@ function extractContadoresPorUnidade(wb){
   return melhorMap;
 }
 
+/* Extrai as linhas do quadro "ABA LOCAÇÕES BLESSING" (colunas B a E) da aba
+   "RESUMO POR UNIDADE" — Linha, Locação Fixa, Vendas e Locação Variável — usadas
+   apenas na exportação da planilha "Analítico Blessing". Localiza o cabeçalho pelo
+   conteúdo (não pela posição fixa) para não depender da disposição exata do quadro. */
+function extractResumoPorUnidadeRows(wb){
+  const sheetName = wb.SheetNames.find(n=> stripAccents(n).includes('RESUMO POR UNIDADE'));
+  if(!sheetName) return [];
+  const ws = wb.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+  let headerRowIdx = -1;
+  for(let i=0;i<rows.length;i++){
+    const norm = (rows[i]||[]).map(c=> stripAccents(c));
+    if(norm.some(c=>c.includes('LOCACAO FIXA')) && norm.some(c=>c==='VENDAS')){ headerRowIdx = i; break; }
+  }
+  if(headerRowIdx === -1) return [];
+  const norm = rows[headerRowIdx].map(c=> stripAccents(c));
+  const iLinha = norm.findIndex(c=> c.includes('ROTULOS') || c === 'LINHA');
+  const iLocFixa = norm.findIndex(c=> c.includes('LOCACAO FIXA'));
+  const iVendas = norm.findIndex(c=> c === 'VENDAS');
+  const iLocVar = norm.findIndex(c=> c.includes('LOCACAO VARI'));
+  if([iLinha,iLocFixa,iVendas,iLocVar].some(i=>i===-1)) return [];
+  const out = [];
+  for(let i=headerRowIdx+1;i<rows.length;i++){
+    const row = rows[i];
+    if(!row || !row[iLinha]) continue;
+    const label = String(row[iLinha]).trim();
+    if(!label || stripAccents(label).includes('TOTAL')) continue; // pula eventual linha de total
+    out.push({
+      linha: label,
+      locacaoFixa: Number(row[iLocFixa])||0,
+      vendas: Number(row[iVendas])||0,
+      locacaoVariavel: Number(row[iLocVar])||0,
+    });
+  }
+  return out;
+}
+
+/* Converte a binary string lida pelo FileReader (readAsBinaryString, já usada para o
+   SheetJS) num ArrayBuffer, para reaproveitá-la também no ExcelJS sem precisar ler o
+   arquivo do disco uma segunda vez. */
+function binaryStringToArrayBuffer(bstr){
+  const len = bstr.length;
+  const buf = new Uint8Array(len);
+  for(let i=0;i<len;i++) buf[i] = bstr.charCodeAt(i) & 0xFF;
+  return buf.buffer;
+}
+
+/* Captura uma cópia fiel (valores + estilo de cada célula, largura de colunas, altura de
+   linhas e mesclagens) da aba "RESUMO LOCAÇÕES", para poder transcrevê-la depois na
+   planilha "Analítico Blessing" com o mesmo formato/estilo. Usa o ExcelJS porque o SheetJS
+   (já usado no resto do app) não escreve estilos de forma confiável. Células com fórmula
+   são gravadas pelo valor já calculado (resultado em cache), para não deixar na planilha
+   exportada fórmulas que apontam para abas que não existem nesse novo arquivo. */
+async function extractResumoLocacoesSheetModel(binaryString){
+  if(typeof ExcelJS === 'undefined') return null; // biblioteca não carregou — exportação segue sem essa aba
+  try{
+    const wbx = new ExcelJS.Workbook();
+    await wbx.xlsx.load(binaryStringToArrayBuffer(binaryString));
+    const wsx = wbx.worksheets.find(s=> /RESUMO/i.test(s.name) && /LOCA/i.test(s.name));
+    if(!wsx) return null;
+    const colCount = wsx.columnCount || wsx.actualColumnCount || 0;
+    const cols = [];
+    for(let c=1;c<=colCount;c++){ cols.push({ width: wsx.getColumn(c).width || null }); }
+    const modelRows = [];
+    wsx.eachRow({includeEmpty:true}, (row, rowNumber)=>{
+      const cells = [];
+      row.eachCell({includeEmpty:true}, (cell, colNumber)=>{
+        let v = cell.value;
+        // fórmulas normais ({formula,result}) e fórmulas compartilhadas ({sharedFormula,result})
+        // são gravadas apenas pelo valor já calculado — não faz sentido levar fórmulas para
+        // uma planilha nova que não tem as outras abas/tabelas referenciadas (ex.: LOC_BLESSING).
+        if(v && typeof v === 'object' && ('formula' in v || 'sharedFormula' in v)){ v = (v.result !== undefined) ? v.result : null; }
+        if(v instanceof Date){ v = v.toISOString(); }
+        cells.push({ c: colNumber, v, isDate: cell.value instanceof Date, s: cell.style ? JSON.parse(JSON.stringify(cell.style)) : null });
+      });
+      modelRows.push({ r: rowNumber, h: row.height || null, cells });
+    });
+    return { name: wsx.name, cols, rows: modelRows, merges: (wsx.model && wsx.model.merges) ? wsx.model.merges.slice() : [] };
+  }catch(e){
+    console.error('Falha ao capturar a formatação original da aba RESUMO LOCAÇÕES:', e);
+    return null;
+  }
+}
+
 function detectCol(headers, candidates){
   const lower = headers.map(h=>String(h||'').toUpperCase().trim());
   for(const c of candidates){
@@ -1755,15 +1951,17 @@ function excelDateToISO(v){
 let _pendingImport = null; // payload da importação aguardando confirmação do usuário (só usado quando já há dados carregados)
 
 function importFile(file){
+  showImportProgress();
   const reader = new FileReader();
-  reader.onload = (e)=>{
+  reader.onload = async (e)=>{
     try{
+      setImportProgressStep(1);
       const wb = XLSX.read(e.target.result, {type:'binary', cellDates:true});
       const sheetName = wb.SheetNames.find(n=>/BASE/i.test(n)) || wb.SheetNames[0];
       const ws = wb.Sheets[sheetName];
       const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
       const headerRowIdx = rows.findIndex(r=> r.some(c=> String(c||'').toUpperCase().includes('UNIDADE')));
-      if(headerRowIdx === -1){ toast('Não encontrei o cabeçalho (UNIDADE) na planilha.', true); return; }
+      if(headerRowIdx === -1){ hideImportProgress(); toast('Não encontrei o cabeçalho (UNIDADE) na planilha.', true); return; }
       const headers = rows[headerRowIdx];
       const idx = {
         unidade: detectCol(headers,['UNIDADE']),
@@ -1782,6 +1980,7 @@ function importFile(file){
       };
       let imported = 0;
       const newRecs = [];
+      setImportProgressStep(2);
       for(let i=headerRowIdx+1;i<rows.length;i++){
         const row = rows[i];
         if(!row || idx.unidade===-1 || !row[idx.unidade]) continue;
@@ -1806,16 +2005,24 @@ function importFile(file){
         });
         imported++;
       }
-      if(imported===0){ toast('Nenhum registro válido encontrado no arquivo.', true); return; }
+      if(imported===0){ hideImportProgress(); toast('Nenhum registro válido encontrado no arquivo.', true); return; }
 
       // Linhas item-a-item da aba "LOCAÇOES BLESSING" (coluna F/LOC.UNIT e coluna J/TOTAL TABELA)
       // e o mapa de contadores por unidade — usados para recalcular os cards de Locações
       // dinamicamente conforme o filtro aplicado no dashboard, em vez de um total fixo.
+      setImportProgressStep(3);
       const locExtract = extractLocacoesBlessingRows(wb);
       const novasLocRows = locExtract.rows;
       const novosContadores = extractContadoresPorUnidade(wb);
 
-      const payload = { newRecs, sheetName, imported, locExtract, novasLocRows, novosContadores };
+      // Dado extra usado só na exportação da planilha "Analítico Blessing" (aba RESUMO POR
+      // UNIDADE) — via SheetJS, rápido, não afeta nenhum card ou relatório já existente.
+      setImportProgressStep(4);
+      const novoResumoUnidadeRows = extractResumoPorUnidadeRows(wb);
+
+      const payload = { newRecs, sheetName, imported, locExtract, novasLocRows, novosContadores, novoResumoUnidadeRows };
+
+      hideImportProgress();
 
       // Só faz sentido perguntar "substituir ou adicionar" quando já existem dados
       // carregados no dashboard — com o dashboard vazio, a pergunta é irrelevante
@@ -1825,12 +2032,42 @@ function importFile(file){
       } else {
         openImportConfirmModal(payload);
       }
+
+      // Cópia fiel (valores + estilo) da aba RESUMO LOCAÇÕES — só usada na exportação da
+      // planilha "Analítico Blessing". Roda em segundo plano, DEPOIS de a importação
+      // principal já ter concluído e a tela de progresso já ter fechado, para que uma
+      // eventual lentidão/travamento do ExcelJS ao processar o arquivo nunca prenda a tela
+      // de progresso nem trave o restante do dashboard. Tem um limite de tempo de segurança;
+      // se estourar, a exportação da Analítico Blessing simplesmente segue sem essa aba.
+      captureResumoLocacoesSheetModelBackground(e.target.result);
     }catch(err){
+      hideImportProgress();
       console.error(err);
       toast('Erro ao ler o arquivo: ' + err.message, true);
     }
   };
+  reader.onerror = ()=>{
+    hideImportProgress();
+    toast('Erro ao ler o arquivo selecionado.', true);
+  };
   reader.readAsBinaryString(file);
+}
+
+/* Executa extractResumoLocacoesSheetModel em segundo plano, com um limite de tempo de
+   segurança (evita que o ExcelJS trave essa etapa indefinidamente num arquivo grande/atípico).
+   Não bloqueia a importação principal nem reabre a tela de progresso — falha silenciosamente
+   (a exportação da Analítico Blessing só perde a aba RESUMO LOCAÇÕES nesse caso). */
+function captureResumoLocacoesSheetModelBackground(binaryString){
+  const TIMEOUT_MS = 20000;
+  const timeoutPromise = new Promise(resolve=> setTimeout(()=> resolve(null), TIMEOUT_MS));
+  Promise.race([ extractResumoLocacoesSheetModel(binaryString), timeoutPromise ])
+    .then(model=>{
+      RESUMO_LOC_SHEET_MODEL = model || null;
+      saveAnaliticoExtras();
+    })
+    .catch(err=>{
+      console.error('Falha ao capturar a formatação da aba RESUMO LOCAÇÕES (execução em segundo plano):', err);
+    });
 }
 
 /* Exibe o modal de confirmação de importação — só é chamado quando DATA já tem
@@ -1853,9 +2090,15 @@ function closeImportConfirmModal(){
    e RESUMO_LOC, persiste e atualiza a tela. A importação sempre SUBSTITUI os
    dados atuais pela competência recém-carregada. */
 function applyImport(payload){
-  const { newRecs, novasLocRows, novosContadores, locExtract, imported } = payload;
+  const { newRecs, novasLocRows, novosContadores, locExtract, imported, novoResumoUnidadeRows } = payload;
 
   DATA = newRecs;
+
+  // Atualiza o dado extra de exportação "Analítico Blessing" (RESUMO POR UNIDADE) — a aba
+  // RESUMO LOCAÇÕES é tratada à parte, em segundo plano (captureResumoLocacoesSheetModelBackground),
+  // e não deve ser mexida aqui para não apagar um resultado que já tenha chegado.
+  RESUMO_UNIDADE_ROWS = novoResumoUnidadeRows || [];
+  saveAnaliticoExtras();
 
   let resumoAtualizado = false;
   if(novasLocRows.length || Object.keys(novosContadores).length){
@@ -1914,6 +2157,160 @@ function exportFile(){
   }catch(err){
     console.error(err);
     toast('Erro ao exportar: ' + err.message, true);
+  }
+}
+
+/* ============================ EXPORTAÇÃO "ANALÍTICO BLESSING" ============================ */
+/* Gera uma planilha separada, "Analítico Blessing", com 4 abas (BASE, LOCAÇÕES BLESSING,
+   RESUMO POR UNIDADE e RESUMO LOCAÇÕES), em estilo profissional e com autofiltro nas 3
+   primeiras abas. A aba RESUMO LOCAÇÕES é transcrita com o mesmo formato/estilo da aba de
+   origem (ver extractResumoLocacoesSheetModel). Usa o ExcelJS (carregado só para esta
+   função) — não usa nem altera o exportFile()/exportação "Excel" já existente. */
+
+/* Cria uma aba de dados com cabeçalho estilizado, autofiltro, congelamento da 1ª linha,
+   larguras/formatos de coluna e zebra leve nas linhas — reutilizada pelas 3 primeiras abas. */
+function addAnaliticoDataSheet(wbx, {name, headers, rows, colWidths, colFormats}){
+  const wsx = wbx.addWorksheet(name, { views: [{ state:'frozen', ySplit:1 }] });
+  wsx.columns = headers.map((h,i)=> ({ header:h, key:'c'+i, width:(colWidths && colWidths[i]) || 16 }));
+  rows.forEach(r=> wsx.addRow(r));
+
+  const headerRow = wsx.getRow(1);
+  headerRow.height = 22;
+  headerRow.eachCell(cell=>{
+    cell.font = { bold:true, color:{argb:'FFFFFFFF'}, size:11 };
+    cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FF1F3864'} };
+    cell.alignment = { vertical:'middle', horizontal:'center', wrapText:true };
+    cell.border = { bottom:{style:'thin', color:{argb:'FFCCCCCC'}} };
+  });
+
+  if(headers.length){
+    wsx.autoFilter = { from:{row:1,column:1}, to:{row:1,column:headers.length} };
+  }
+
+  if(colFormats){
+    colFormats.forEach((fmt,i)=>{ if(fmt) wsx.getColumn(i+1).numFmt = fmt; });
+  }
+
+  for(let r=2;r<=wsx.rowCount;r++){
+    const row = wsx.getRow(r);
+    row.eachCell({includeEmpty:false}, cell=>{
+      cell.border = { bottom:{style:'hair', color:{argb:'FFE5E5E5'}} };
+      cell.alignment = cell.alignment || { vertical:'middle' };
+    });
+    if(r % 2 === 0){
+      row.eachCell({includeEmpty:false}, cell=>{ cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:'FFF5F7FA'} }; });
+    }
+  }
+  return wsx;
+}
+
+/* Reconstrói a aba RESUMO LOCAÇÕES a partir do modelo capturado na importação (valores +
+   estilo de cada célula, largura de colunas, altura de linhas e mesclagens). */
+function buildResumoLocacoesSheetFromModel(wbx, model){
+  const wsx = wbx.addWorksheet((model && model.name) || 'RESUMO LOCAÇÕES');
+  if(!model) return wsx;
+  (model.cols||[]).forEach((c,i)=>{ if(c.width) wsx.getColumn(i+1).width = c.width; });
+  (model.rows||[]).forEach(rowModel=>{
+    const row = wsx.getRow(rowModel.r);
+    (rowModel.cells||[]).forEach(cellModel=>{
+      const cell = row.getCell(cellModel.c);
+      cell.value = cellModel.isDate && cellModel.v ? new Date(cellModel.v) : cellModel.v;
+      if(cellModel.s) cell.style = cellModel.s;
+    });
+    if(rowModel.h) row.height = rowModel.h;
+    row.commit();
+  });
+  (model.merges||[]).forEach(range=>{
+    try{ wsx.mergeCells(range); }catch(err){ /* faixa de mesclagem inválida no arquivo de origem — ignora */ }
+  });
+  return wsx;
+}
+
+async function exportAnaliticoBlessing(){
+  if(typeof ExcelJS === 'undefined'){
+    toast('Não foi possível carregar o componente de exportação (ExcelJS). Verifique sua conexão e tente novamente.', true);
+    return;
+  }
+  const temBase = DATA.length > 0;
+  const temLocacoes = LOC_ROWS.length > 0;
+  const temResumoUnidade = RESUMO_UNIDADE_ROWS.length > 0;
+  const temResumoLocacoes = !!RESUMO_LOC_SHEET_MODEL;
+
+  if(!temBase && !temLocacoes && !temResumoUnidade && !temResumoLocacoes){
+    toast('Nada para exportar — importe a planilha da competência primeiro.', true);
+    return;
+  }
+
+  try{
+    const wbx = new ExcelJS.Workbook();
+    wbx.creator = 'Grupo Labmedic';
+    wbx.created = new Date();
+
+    // 1) BASE
+    if(temBase){
+      addAnaliticoDataSheet(wbx, {
+        name: 'BASE',
+        headers: ['UNIDADE','LINHA','PRODUTO','QTDE','DATA','V.SUBTOT.VENDA','TOTAL_TABELA','NF'],
+        rows: DATA.map(r=> [
+          r.unidade, r.linha, r.produto, r.qtde,
+          r.data ? new Date(r.data + 'T00:00:00') : null,
+          Number(r.vsubtot)||0, Number(r.totaltabela)||0, r.nf
+        ]),
+        colWidths: [24,18,32,8,12,16,14,10],
+        colFormats: [null,null,null,'0','dd/mm/yyyy','#,##0.00','#,##0.00',null]
+      });
+    }
+
+    // 2) LOCAÇÕES BLESSING
+    if(temLocacoes){
+      addAnaliticoDataSheet(wbx, {
+        name: 'LOCAÇÕES BLESSING',
+        headers: ['UNIDADE','LINHA','EQUIPAMENTO','QTDE','LOC.FIX.TOT','LOC.VARIÁVEL','VENDA','TOTAL TABELA'],
+        rows: LOC_ROWS.map(r=> [
+          r.unidade, r.linha, r.equipamento, r.qtde,
+          Number(r.locFixTotal)||0, Number(r.locVariavel)||0, Number(r.venda)||0, Number(r.totalTabela)||0
+        ]),
+        colWidths: [22,18,26,8,14,14,14,14],
+        colFormats: [null,null,null,'0','#,##0.00','#,##0.00','#,##0.00','#,##0.00']
+      });
+    }
+
+    // 3) RESUMO POR UNIDADE (quadro "ABA LOCAÇÕES BLESSING": Linha/Locação Fixa/Vendas/Locação Variável)
+    if(temResumoUnidade){
+      addAnaliticoDataSheet(wbx, {
+        name: 'RESUMO POR UNIDADE',
+        headers: ['LINHA','LOCAÇÃO FIXA','VENDAS','LOCAÇÃO VARIÁVEL'],
+        rows: RESUMO_UNIDADE_ROWS.map(r=> [ r.linha, Number(r.locacaoFixa)||0, Number(r.vendas)||0, Number(r.locacaoVariavel)||0 ]),
+        colWidths: [28,16,16,18],
+        colFormats: [null,'#,##0.00','#,##0.00','#,##0.00']
+      });
+    }
+
+    // 4) RESUMO LOCAÇÕES (transcrição fiel, mesmo formato/estilo da aba de origem)
+    if(temResumoLocacoes){
+      buildResumoLocacoesSheetFromModel(wbx, RESUMO_LOC_SHEET_MODEL);
+    }
+
+    const buffer = await wbx.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {type:'application/octet-stream'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Analitico_Blessing_${todayISO()}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=> URL.revokeObjectURL(url), 3000);
+
+    const abasFaltando = [];
+    if(!temBase) abasFaltando.push('BASE');
+    if(!temLocacoes) abasFaltando.push('LOCAÇÕES BLESSING');
+    if(!temResumoUnidade) abasFaltando.push('RESUMO POR UNIDADE');
+    if(!temResumoLocacoes) abasFaltando.push('RESUMO LOCAÇÕES');
+    toast('Analítico Blessing exportado com sucesso.' + (abasFaltando.length ? ` Aba(s) não incluída(s) por falta de dados: ${abasFaltando.join(', ')}.` : ''));
+  }catch(err){
+    console.error(err);
+    toast('Erro ao exportar Analítico Blessing: ' + err.message, true);
   }
 }
 
@@ -2036,6 +2433,7 @@ $('#fileImport').addEventListener('change', (e)=>{
   e.target.value = '';
 });
 $('#btnExport').addEventListener('click', exportFile);
+$('#btnExportAnalitico').addEventListener('click', exportAnaliticoBlessing);
 
 $('#btnClearAll').addEventListener('click', async ()=>{
   if(!confirm('Isso vai apagar TODOS os registros e o resumo de locações salvos no navegador. Deseja continuar?')) return;
@@ -2043,9 +2441,12 @@ $('#btnClearAll').addEventListener('click', async ()=>{
   RESUMO_LOC = { contadores:0, locacoesFixas:0, descontoTabela:0, hasData:false };
   LOC_ROWS = [];
   CONTADORES_MAP = {};
+  RESUMO_UNIDADE_ROWS = [];
+  RESUMO_LOC_SHEET_MODEL = null;
   await saveData();
   await saveResumo();
   await saveLocDetalhe();
+  await saveAnaliticoExtras();
   renderTable();
   toast('Todos os registros foram removidos.');
 });
@@ -2059,6 +2460,8 @@ $('#btnClearAll').addEventListener('click', async ()=>{
   await loadResumo();
   await loadLocDetalhe();
   await loadClientName();
+  await loadAnaliticoExtras();
+  await loadResumoLocSheetModel();
   renderTable();
 })();
 </script>
