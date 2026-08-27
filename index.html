@@ -130,6 +130,9 @@
   .card.c-amber{--accent:var(--amber-500);}
   .card.c-coral{--accent:var(--coral-500);}
   .card.c-navy{--accent:var(--navy-800);}
+  .card.clickable{cursor:pointer; transition:transform .1s ease, box-shadow .15s ease;}
+  .card.clickable:hover, .card.clickable:focus-visible{transform:translateY(-2px); box-shadow:0 10px 22px -10px rgba(15,43,58,.28); outline:none;}
+  .card.clickable .k::after{content:' ›'; opacity:.55; font-weight:700;}
 
   /* ---------- Panel ---------- */
   .panel{
@@ -241,6 +244,7 @@
     color:#fff; border-radius:12px 12px 0 0;
   }
   .modal-head h3{margin:0; font-family:var(--font-display); font-size:17px; font-weight:600;}
+  .modal-head .modal-sub{margin:3px 0 0; font-size:11.5px; color:#cfe4e2;}
   .modal-head .close{background:none; border:none; color:#cfe4e2; font-size:20px; cursor:pointer; line-height:1;}
   .modal-body{padding:20px; max-height:70vh; overflow:auto;}
   .form-grid{display:grid; grid-template-columns:repeat(4, 1fr); gap:12px;}
@@ -577,6 +581,41 @@
   </div>
 </div>
 
+<!-- MODAL DETALHE DE CARD (drill-down de "Unidades no filtro" e "Locações fixas") -->
+<div class="modal-backdrop no-print" id="itemModalBackdrop">
+  <div class="modal" style="max-width:840px;">
+    <div class="modal-head">
+      <div>
+        <h3 id="itemModalTitle">Detalhe</h3>
+        <p class="modal-sub" id="itemModalSub"></p>
+      </div>
+      <button class="close" id="btnCloseItemModal">&times;</button>
+    </div>
+    <div class="modal-body" id="itemModalBody"></div>
+    <div class="modal-foot" id="itemModalFoot"></div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAÇÃO DE IMPORTAÇÃO (só aparece quando já há dados carregados) -->
+<div class="modal-backdrop no-print" id="importModalBackdrop">
+  <div class="modal" style="max-width:540px;">
+    <div class="modal-head">
+      <h3>Importar planilha</h3>
+      <button class="close" id="btnCloseImportModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin:0; font-size:13.5px; color:var(--ink-600); line-height:1.6;" id="importModalMsg"></p>
+    </div>
+    <div class="modal-foot">
+      <span class="hint">Esta ação não pode ser desfeita.</span>
+      <div class="toolbar">
+        <button class="btn btn-ghost btn-sm" id="btnImportCancel">Cancelar</button>
+        <button class="btn btn-coral btn-sm" id="btnImportReplace">Substituir tudo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ÁREA DE IMPRESSÃO -->
 <div id="printArea"></div>
 
@@ -899,6 +938,112 @@ function getResumoLocacoesAtual(){
   });
 
   return { contadores, locacoesFixas, descontoTabela, hasData: RESUMO_LOC.hasData };
+}
+
+/* Mesmo filtro de Unidade/Linha usado em getResumoLocacoesAtual(), mas retornando
+   as linhas item-a-item (em vez do total agregado) — usado pelo modal de detalhe
+   do card "Locações fixas", para listar exatamente os equipamentos que compõem
+   o valor exibido no card. */
+function getLocacoesFixasFiltradas(){
+  const unidadeFiltro = $('#fUnidade').value;
+  const linhaFiltro = $('#fLinha').value;
+  return LOC_ROWS.filter(r=>{
+    if(unidadeFiltro && r.unidade !== unidadeFiltro) return false;
+    if(linhaFiltro && r.linha !== linhaFiltro) return false;
+    return r.tipoLoc === 'FIXA';
+  });
+}
+
+/* ============================ MODAL DE DETALHE (drill-down dos cards) ============================ */
+function openItemModal({title, sub, bodyHtml, footHtml}){
+  $('#itemModalTitle').textContent = title;
+  const subEl = $('#itemModalSub');
+  subEl.textContent = sub || '';
+  subEl.style.display = sub ? '' : 'none';
+  $('#itemModalBody').innerHTML = bodyHtml;
+  const foot = $('#itemModalFoot');
+  foot.innerHTML = footHtml || '';
+  foot.style.display = footHtml ? '' : 'none';
+  $('#itemModalBackdrop').classList.add('open');
+}
+function closeItemModal(){ $('#itemModalBackdrop').classList.remove('open'); }
+
+/* Drill-down do card "Unidades no filtro": agrupa os pedidos atualmente filtrados
+   (mesmos `rows` usados para montar os cards principais) por unidade. */
+function openUnidadesFiltroModal(rows){
+  const byUnidade = {};
+  rows.forEach(r=>{
+    const u = r.unidade || '—';
+    if(!byUnidade[u]) byUnidade[u] = {registros:0, qtde:0, venda:0, tabela:0};
+    byUnidade[u].registros++;
+    byUnidade[u].qtde += Number(r.qtde)||0;
+    byUnidade[u].venda += Number(r.vsubtot)||0;
+    byUnidade[u].tabela += Number(r.totaltabela)||0;
+  });
+  const nomes = Object.keys(byUnidade).sort((a,b)=> byUnidade[b].venda - byUnidade[a].venda);
+
+  const bodyHtml = !nomes.length ? '<p class="rp-empty" style="padding:20px;">Nenhuma unidade no filtro atual.</p>' : `
+    <div class="rp-table-wrap" style="padding:0 20px 16px;">
+      <table class="rp-table">
+        <thead><tr>
+          <th>Unidade</th><th class="num-th">Registros</th><th class="num-th">Qtde</th>
+          <th class="num-th">V.Subtot.Venda</th><th class="num-th">Total de Tabela</th>
+        </tr></thead>
+        <tbody>
+          ${nomes.map(u=>`
+            <tr>
+              <td>${u}</td>
+              <td class="num-cell">${fmtNum(byUnidade[u].registros)}</td>
+              <td class="num-cell">${fmtNum(byUnidade[u].qtde)}</td>
+              <td class="num-cell">${fmtBRL(byUnidade[u].venda)}</td>
+              <td class="num-cell">${fmtBRL(byUnidade[u].tabela)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+
+  const totalVenda = nomes.reduce((s,u)=>s+byUnidade[u].venda,0);
+  openItemModal({
+    title: 'Unidades no filtro',
+    sub: nomes.length + ' unidade(s) no filtro de Unidade/Linha/Produto/Data/Pedido/NF atualmente aplicado',
+    bodyHtml,
+    footHtml: `<span class="hint">Total de unidades: <b>${fmtNum(nomes.length)}</b></span><span class="hint">Venda somada: <b>${fmtBRL(totalVenda)}</b></span>`
+  });
+}
+
+/* Drill-down do card "Locações fixas": lista os equipamentos com TIPO.LOC="FIXA"
+   que compõem exatamente o valor exibido no card, respeitando o mesmo filtro de
+   Unidade/Linha usado por getResumoLocacoesAtual(). */
+function openLocacoesFixasModal(){
+  const rows = getLocacoesFixasFiltradas().slice().sort((a,b)=> b.locUnit - a.locUnit);
+
+  const bodyHtml = !rows.length ? '<p class="rp-empty" style="padding:20px;">Nenhum equipamento com locação fixa no filtro atual.</p>' : `
+    <div class="rp-table-wrap" style="padding:0 20px 16px;">
+      <table class="rp-table">
+        <thead><tr>
+          <th>Unidade</th><th>Linha</th><th>Equipamento</th>
+          <th class="num-th">Qtde</th><th class="num-th">Loc. mensal</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(r=>`
+            <tr>
+              <td>${r.unidade||'—'}</td>
+              <td>${r.linha||'—'}</td>
+              <td>${r.equipamento||'—'}</td>
+              <td class="num-cell">${fmtNum(r.qtde)}</td>
+              <td class="num-cell">${fmtBRL(r.locUnit)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+
+  const total = rows.reduce((s,r)=>s+(Number(r.locUnit)||0),0);
+  openItemModal({
+    title: 'Locações fixas',
+    sub: rows.length + ' equipamento(s) com locação fixa no filtro de Unidade/Linha atualmente aplicado',
+    bodyHtml,
+    footHtml: `<span class="hint">Equipamentos: <b>${fmtNum(rows.length)}</b></span><span class="hint">Total: <b>${fmtBRL(total)}</b></span>`
+  });
 }
 
 /* ============================ RELATÓRIOS (seletor) ============================ */
@@ -1230,13 +1375,21 @@ function renderCards(rows){
     {k:'Valor venda', v: fmtBRL(vendaTotal), cls:'c-teal'},
     {k:'Valor tabela', v: fmtBRL(tabelaTotal), cls:'c-amber'},
     {k:'Diferença (desconto)', v: fmtBRL(difTotal), cls:'c-coral'},
-    {k:'Unidades no filtro', v: fmtNum(unidadesAtivas), cls:'c-navy'},
+    {k:'Unidades no filtro', v: fmtNum(unidadesAtivas), cls:'c-navy', role:'unidades-filtro'},
   ];
   $('#cardsRow').innerHTML = cards.map(c=>`
-    <div class="card ${c.cls}">
+    <div class="card ${c.cls}${c.role?' clickable':''}" ${c.role?`data-role="${c.role}" tabindex="0" role="button"`:''}>
       <p class="k">${c.k}</p>
       <p class="v">${c.v}</p>
     </div>`).join('');
+
+  const unidCard = $('#cardsRow [data-role="unidades-filtro"]');
+  if(unidCard){
+    unidCard.addEventListener('click', ()=> openUnidadesFiltroModal(rows));
+    unidCard.addEventListener('keydown', e=>{
+      if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openUnidadesFiltroModal(rows); }
+    });
+  }
   return tabelaTotal;
 }
 
@@ -1245,15 +1398,23 @@ function renderResumoCards(valorTabela){
   const montante = (Number(resumo.locacoesFixas)||0) + (Number(resumo.contadores)||0) - (Number(resumo.descontoTabela)||0) + (Number(valorTabela)||0);
   const cards = [
     {k:'Valor proveniente dos contadores', v: fmtBRL(resumo.contadores), cls:'c-teal'},
-    {k:'Locações fixas', v: fmtBRL(resumo.locacoesFixas), cls:'c-amber'},
+    {k:'Locações fixas', v: fmtBRL(resumo.locacoesFixas), cls:'c-amber', role: resumo.hasData ? 'locacoes-fixas' : null},
     {k:'Desconto valor de tabela', v: fmtBRL(resumo.descontoTabela), cls:'c-coral'},
     {k:'Montante a cobrar do cliente', v: fmtBRL(montante), cls:'c-navy'},
   ];
   $('#cardsRowLocacoes').innerHTML = cards.map(c=>`
-    <div class="card ${c.cls}">
+    <div class="card ${c.cls}${c.role?' clickable':''}" ${c.role?`data-role="${c.role}" tabindex="0" role="button"`:''}>
       <p class="k">${c.k}${resumo.hasData ? '' : ' · aguardando importação'}</p>
       <p class="v">${c.v}</p>
     </div>`).join('');
+
+  const locCard = $('#cardsRowLocacoes [data-role="locacoes-fixas"]');
+  if(locCard){
+    locCard.addEventListener('click', openLocacoesFixasModal);
+    locCard.addEventListener('keydown', e=>{
+      if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openLocacoesFixasModal(); }
+    });
+  }
 }
 
 function renderTable(){
@@ -1591,6 +1752,8 @@ function excelDateToISO(v){
   return todayISO();
 }
 
+let _pendingImport = null; // payload da importação aguardando confirmação do usuário (só usado quando já há dados carregados)
+
 function importFile(file){
   const reader = new FileReader();
   reader.onload = (e)=>{
@@ -1644,11 +1807,6 @@ function importFile(file){
         imported++;
       }
       if(imported===0){ toast('Nenhum registro válido encontrado no arquivo.', true); return; }
-      if(confirm(`Encontrados ${imported} registros na aba "${sheetName}". Deseja SUBSTITUIR os dados atuais? (Cancelar = adicionar aos existentes)`)){
-        DATA = newRecs;
-      } else {
-        DATA = DATA.concat(newRecs);
-      }
 
       // Linhas item-a-item da aba "LOCAÇOES BLESSING" (coluna F/LOC.UNIT e coluna J/TOTAL TABELA)
       // e o mapa de contadores por unidade — usados para recalcular os cards de Locações
@@ -1656,31 +1814,68 @@ function importFile(file){
       const locExtract = extractLocacoesBlessingRows(wb);
       const novasLocRows = locExtract.rows;
       const novosContadores = extractContadoresPorUnidade(wb);
-      let resumoAtualizado = false;
-      if(novasLocRows.length || Object.keys(novosContadores).length){
-        LOC_ROWS = novasLocRows;
-        CONTADORES_MAP = novosContadores;
-        if(locExtract.clientName){ CLIENT_NAME = locExtract.clientName; saveClientName(); }
-        RESUMO_LOC = {
-          contadores: Object.values(CONTADORES_MAP).reduce((s,v)=>s+(Number(v)||0),0),
-          locacoesFixas: LOC_ROWS.filter(r=>r.tipoLoc==='FIXA').reduce((s,r)=>s+r.locUnit,0),
-          descontoTabela: LOC_ROWS.filter(r=>r.tipoLoc==='TESTE').reduce((s,r)=>s+r.totalTabela,0),
-          hasData: true
-        };
-        saveLocDetalhe();
-        saveResumo();
-        resumoAtualizado = true;
-      }
 
-      saveData();
-      renderTable();
-      toast(`${imported} registros importados com sucesso.${resumoAtualizado ? ' Resumo de Locações atualizado.' : ''}`);
+      const payload = { newRecs, sheetName, imported, locExtract, novasLocRows, novosContadores };
+
+      // Só faz sentido perguntar "substituir ou adicionar" quando já existem dados
+      // carregados no dashboard — com o dashboard vazio, a pergunta é irrelevante
+      // e a importação é aplicada direto.
+      if(DATA.length === 0){
+        applyImport(payload);
+      } else {
+        openImportConfirmModal(payload);
+      }
     }catch(err){
       console.error(err);
       toast('Erro ao ler o arquivo: ' + err.message, true);
     }
   };
   reader.readAsBinaryString(file);
+}
+
+/* Exibe o modal de confirmação de importação — só é chamado quando DATA já tem
+   registros carregados, evitando perguntar algo sem sentido num dashboard vazio.
+   Como o dashboard trabalha sempre com a competência importada por vez, a única
+   decisão real é confirmar ou não a substituição — não há opção de mesclar. */
+function openImportConfirmModal(payload){
+  _pendingImport = payload;
+  $('#importModalMsg').innerHTML = `Já existem <b>${fmtNum(DATA.length)}</b> registro(s) carregados no dashboard.<br><br>
+    Foram encontrados <b>${fmtNum(payload.imported)}</b> registro(s) na aba "<b>${payload.sheetName}</b>" do arquivo selecionado. Confirma a substituição dos dados atuais por esta nova competência?`;
+  $('#importModalBackdrop').classList.add('open');
+}
+function closeImportConfirmModal(){
+  $('#importModalBackdrop').classList.remove('open');
+  _pendingImport = null;
+}
+
+/* Efetiva a importação já decidida (direto, quando o dashboard estava vazio, ou
+   após a confirmação do usuário no modal) — grava DATA, LOC_ROWS, CONTADORES_MAP
+   e RESUMO_LOC, persiste e atualiza a tela. A importação sempre SUBSTITUI os
+   dados atuais pela competência recém-carregada. */
+function applyImport(payload){
+  const { newRecs, novasLocRows, novosContadores, locExtract, imported } = payload;
+
+  DATA = newRecs;
+
+  let resumoAtualizado = false;
+  if(novasLocRows.length || Object.keys(novosContadores).length){
+    LOC_ROWS = novasLocRows;
+    CONTADORES_MAP = novosContadores;
+    if(locExtract.clientName){ CLIENT_NAME = locExtract.clientName; saveClientName(); }
+    RESUMO_LOC = {
+      contadores: Object.values(CONTADORES_MAP).reduce((s,v)=>s+(Number(v)||0),0),
+      locacoesFixas: LOC_ROWS.filter(r=>r.tipoLoc==='FIXA').reduce((s,r)=>s+r.locUnit,0),
+      descontoTabela: LOC_ROWS.filter(r=>r.tipoLoc==='TESTE').reduce((s,r)=>s+r.totalTabela,0),
+      hasData: true
+    };
+    saveLocDetalhe();
+    saveResumo();
+    resumoAtualizado = true;
+  }
+
+  saveData();
+  renderTable();
+  toast(`${imported} registros importados com sucesso.${resumoAtualizado ? ' Resumo de Locações atualizado.' : ''}`);
 }
 
 function exportFile(){
@@ -1774,6 +1969,37 @@ $('#btnCloseModal').addEventListener('click', closeModal);
 $('#btnCancelModal').addEventListener('click', closeModal);
 $('#btnSaveModal').addEventListener('click', saveModal);
 $('#modalBackdrop').addEventListener('click', (e)=>{ if(e.target.id==='modalBackdrop') closeModal(); });
+
+$('#btnCloseItemModal').addEventListener('click', closeItemModal);
+$('#itemModalBackdrop').addEventListener('click', (e)=>{ if(e.target.id==='itemModalBackdrop') closeItemModal(); });
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='Escape' && $('#itemModalBackdrop').classList.contains('open')) closeItemModal();
+});
+
+$('#btnImportReplace').addEventListener('click', ()=>{
+  if(_pendingImport) applyImport(_pendingImport);
+  closeImportConfirmModal();
+});
+$('#btnImportCancel').addEventListener('click', ()=>{
+  toast('Importação cancelada — os dados atuais foram mantidos.');
+  closeImportConfirmModal();
+});
+$('#btnCloseImportModal').addEventListener('click', ()=>{
+  toast('Importação cancelada — os dados atuais foram mantidos.');
+  closeImportConfirmModal();
+});
+$('#importModalBackdrop').addEventListener('click', (e)=>{
+  if(e.target.id==='importModalBackdrop'){
+    toast('Importação cancelada — os dados atuais foram mantidos.');
+    closeImportConfirmModal();
+  }
+});
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='Escape' && $('#importModalBackdrop').classList.contains('open')){
+    toast('Importação cancelada — os dados atuais foram mantidos.');
+    closeImportConfirmModal();
+  }
+});
 
 $('#mLinha').addEventListener('change', ()=>{ fillProdutoDatalist($('#mLinha').value); $('#mProduto').value=''; applyProdutoCatalog(); });
 $('#mProduto').addEventListener('input', applyProdutoCatalog);
