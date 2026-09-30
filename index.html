@@ -271,11 +271,29 @@
     #printArea, #printArea *{visibility:visible;}
     #printArea{display:block; position:absolute; left:0; top:0; width:100%; padding:0;}
     .no-print{display:none !important;}
+    #printArea .pr-header{break-inside:avoid;}
+    #printArea .rp-table thead{display:table-header-group;}
   }
-  .pr-header{display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid var(--navy-900); padding-bottom:10px; margin-bottom:16px;}
-  .pr-title{font-family:var(--font-display); font-size:22px; font-weight:700; margin:0;}
-  .pr-sub{font-size:12px; color:var(--ink-600); margin:4px 0 0;}
-  .pr-meta{text-align:right; font-size:11px; color:var(--ink-400); font-family:var(--font-mono);}
+  .pr-header{
+    display:flex; justify-content:space-between; align-items:flex-end; gap:24px;
+    background:linear-gradient(120deg, var(--navy-950), var(--navy-800) 72%);
+    color:#eef6f5; border-radius:8px; padding:17px 20px 15px; margin-bottom:16px;
+    border-bottom:4px solid var(--teal-500); box-shadow:0 2px 0 rgba(15,43,58,.12);
+  }
+  .pr-brand{font-family:var(--font-mono); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#7de0d5; margin:0 0 6px;}
+  .pr-title{font-family:var(--font-display); font-size:23px; line-height:1.08; font-weight:700; margin:0; letter-spacing:-.01em; color:#fff;}
+  .pr-sub{font-size:12px; color:#cfe4e2; margin:6px 0 0;}
+  .pr-meta{text-align:right; font-size:10.5px; line-height:1.55; color:#cfe4e2; font-family:var(--font-mono); white-space:nowrap;}
+  .pr-meta strong{display:block; color:#fff; font-size:11px; letter-spacing:.04em; text-transform:uppercase;}
+  .pr-page-shell{width:100%; border-collapse:collapse; border-spacing:0; table-layout:fixed;}
+  .pr-page-shell > thead > tr > td,
+  .pr-page-shell > tbody > tr > td{padding:0; border:0; vertical-align:top;}
+  @media print{
+    @page{size:landscape; margin:12mm 10mm;}
+    /* O cabeçalho está no thead estrutural para ser repetido sem sobrepor a listagem. */
+    #printArea .pr-page-shell > thead{display:table-header-group;}
+    #printArea .pr-header{box-shadow:none;}
+  }
   .pr-cards{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:18px;}
   .pr-card{border:1px solid #ccc; border-radius:6px; padding:8px 10px;}
   .pr-card .k{font-size:9px; text-transform:uppercase; letter-spacing:.06em; color:#666; font-family:var(--font-mono);}
@@ -326,19 +344,35 @@
      quebra de texto (em vez de nowrap), para que nenhuma coluna — em especial
      "Total de Tabela" — fique cortada na tela ou na impressão. */
   .rp-table-analitico{table-layout:fixed;}
-  .rp-table-analitico th, .rp-table-analitico td{white-space:normal; word-break:break-word;}
-  .rp-table-analitico th:nth-child(1), .rp-table-analitico td:nth-child(1){width:12%;}
-  .rp-table-analitico th:nth-child(2), .rp-table-analitico td:nth-child(2){width:9%;}
-  .rp-table-analitico th:nth-child(3), .rp-table-analitico td:nth-child(3){width:23%;}
+  .rp-table-analitico th, .rp-table-analitico td{white-space:normal; overflow-wrap:anywhere;}
+  .rp-table-analitico th:nth-child(1), .rp-table-analitico td:nth-child(1){width:13%;}
+  .rp-table-analitico th:nth-child(2), .rp-table-analitico td:nth-child(2){width:10%;}
+  .rp-table-analitico th:nth-child(3), .rp-table-analitico td:nth-child(3){width:25%;}
   .rp-table-analitico th:nth-child(4), .rp-table-analitico td:nth-child(4){width:7%;}
-  .rp-table-analitico th:nth-child(5), .rp-table-analitico td:nth-child(5){width:9%;}
-  .rp-table-analitico th:nth-child(6), .rp-table-analitico td:nth-child(6){width:15%;}
-  .rp-table-analitico th:nth-child(7), .rp-table-analitico td:nth-child(7){width:15%;}
-  .rp-table-analitico th:nth-child(8), .rp-table-analitico td:nth-child(8){width:10%;}
+  .rp-table-analitico th:nth-child(5), .rp-table-analitico td:nth-child(5){width:11%;}
+  .rp-table-analitico th:nth-child(6), .rp-table-analitico td:nth-child(6){width:12%;}
+  .rp-table-analitico th:nth-child(7), .rp-table-analitico td:nth-child(7){width:13%;}
+  .rp-table-analitico th:nth-child(8), .rp-table-analitico td:nth-child(8){width:9%;}
+  .rp-table-analitico th:nth-child(n+4), .rp-table-analitico td:nth-child(n+4){white-space:nowrap; overflow-wrap:normal;}
+  .rp-table-locacoes{table-layout:fixed;}
+  .rp-table-locacoes th, .rp-table-locacoes td{overflow-wrap:anywhere;}
+  .rp-table-locacoes th:nth-child(1), .rp-table-locacoes td:nth-child(1){width:16%;}
+  .rp-table-locacoes th:nth-child(2), .rp-table-locacoes td:nth-child(2){width:22%;}
+  .rp-table-locacoes th:nth-child(3), .rp-table-locacoes td:nth-child(3){width:7%;}
+  .rp-table-locacoes th:nth-child(4), .rp-table-locacoes td:nth-child(4){width:12%;}
+  .rp-table-locacoes th:nth-child(5), .rp-table-locacoes td:nth-child(5){width:12%;}
+  .rp-table-locacoes th:nth-child(6), .rp-table-locacoes td:nth-child(6){width:11%;}
+  .rp-table-locacoes th:nth-child(7), .rp-table-locacoes td:nth-child(7){width:10%;}
+  .rp-table-locacoes th:nth-child(8), .rp-table-locacoes td:nth-child(8){width:10%;}
+  .rp-table-locacoes th:nth-child(n+3), .rp-table-locacoes td:nth-child(n+3){white-space:nowrap; overflow-wrap:normal;}
   @media print{
     .chart-row{grid-template-columns:1fr 1fr; padding:0 0 12px;}
     .rp-table-wrap, .group-block{padding-left:0; padding-right:0;}
-    .rp-table th, .rp-table td{white-space:normal; word-break:break-word;}
+    #printArea .rp-table{width:100%;}
+    #printArea .rp-table th, #printArea .rp-table td{word-break:normal;}
+    #printArea .rp-table-analitico th, #printArea .rp-table-analitico td{overflow-wrap:anywhere;}
+    #printArea .rp-table-analitico th:nth-child(n+4), #printArea .rp-table-analitico td:nth-child(n+4),
+    #printArea .rp-table-locacoes th:nth-child(n+3), #printArea .rp-table-locacoes td:nth-child(n+3){white-space:nowrap; overflow-wrap:normal;}
   }
 
   @media (max-width:1100px){
@@ -1383,7 +1417,7 @@ function renderLocacoesFixasVariaveis(valorTabela){
     const subGeral = subFixa + subVariavel + subVenda;
     body += `<div class="group-block">
       <div class="group-title"><span>${l}</span><span>${fmtBRL(subGeral)}</span></div>
-      <table class="rp-table"><thead><tr>
+      <table class="rp-table rp-table-locacoes"><thead><tr>
         <th>Unidade</th><th>Equipamento</th><th class="num-th">Qtde</th>
         <th class="num-th">Loc.Fix.Total</th><th class="num-th">Loc.Variável</th><th class="num-th">Venda</th>
         <th class="num-th">Total de Tabela</th><th class="num-th">Total Geral</th>
@@ -2292,24 +2326,37 @@ function buildPrintReport(){
 
   const titulo = $('#reportPanelTitle').textContent;
 
-  // Todos os relatórios (Analítico, Faturamento por Linha e Locações Fixas e
-  // Variáveis) são impressos em orientação paisagem, para permitir melhor
-  // distribuição das colunas e informações na página impressa.
+  // Todos os relatórios são impressos em orientação paisagem, com o cabeçalho
+  // editorial do relatório e sem repetir a barra superior da aplicação.
   $('#printOrientationStyle').textContent = '@page { size: landscape; }';
 
   $('#printArea').innerHTML = `
-    <div class="pr-header">
-      <div>
-        <p class="pr-title">GRUPO LABMEDIC — ${CLIENT_NAME}</p>
-        <p class="pr-sub">${titulo} ${filtroDesc.length ? '· ' + filtroDesc.join(' · ') : '(todos os registros)'}</p>
-      </div>
-      <div class="pr-meta">Gerado em ${new Date().toLocaleString('pt-BR')}<br>${rows.length} registro(s) no filtro</div>
-    </div>
-    <div class="cards" style="grid-template-columns:repeat(5,1fr);margin:0 0 16px;">${$('#reportCards').innerHTML}</div>
-    ${$('#reportCharts').innerHTML}
-    ${$('#reportBody').innerHTML}
-    <div class="pr-foot">Grupo Labmedic · Relatório gerado automaticamente pelo formulário de Gestão de Pedidos ${CLIENT_NAME}</div>
+    <table class="pr-page-shell">
+      <thead><tr><td>
+        <div class="pr-header">
+          <div>
+            <p class="pr-brand">GRUPO LABMEDIC · ${CLIENT_NAME}</p>
+            <p class="pr-title">${titulo}</p>
+            <p class="pr-sub">${filtroDesc.length ? filtroDesc.join(' · ') : 'Visão consolidada — todos os registros'}</p>
+          </div>
+          <div class="pr-meta"><strong>Relatório gerencial</strong>Emitido em ${new Date().toLocaleString('pt-BR')}<br>${rows.length} registro(s) no filtro</div>
+        </div>
+      </td></tr></thead>
+      <tbody><tr><td>
+        <div class="cards" style="grid-template-columns:repeat(5,1fr);margin:0 0 16px;">${$('#reportCards').innerHTML}</div>
+        ${$('#reportCharts').innerHTML}
+        ${$('#reportBody').innerHTML}
+        <div class="pr-foot">Grupo Labmedic · Relatório gerado automaticamente pelo formulário de Gestão de Pedidos ${CLIENT_NAME}</div>
+      </td></tr></tbody>
+    </table>
   `;
+  const tituloOriginal = document.title;
+  document.title = `${titulo} — ${CLIENT_NAME}`;
+  const restaurarTitulo = ()=>{
+    document.title = tituloOriginal;
+    window.removeEventListener('afterprint', restaurarTitulo);
+  };
+  window.addEventListener('afterprint', restaurarTitulo);
   window.print();
 }
 
